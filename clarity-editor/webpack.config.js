@@ -1,6 +1,23 @@
+const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = [
+  {
+    mode: 'development',
+    entry: './src/index.ts',
+    target: 'electron-main',
+    module: {
+      rules: [{
+        test: /\.ts$/,
+        include: /src/,
+        use: [{ loader: 'ts-loader' }]
+      }]
+    },
+    output: {
+      path: path.join(__dirname, './dist'),
+      filename: 'index.js'
+    }
+  },
   {
     mode: 'development',
     entry: './src/react.tsx',
@@ -12,7 +29,7 @@ module.exports = [
       use: [{ loader: 'ts-loader' }]
     }] },
     output: {
-      path: __dirname + '/dist',
+      path: path.join(__dirname, './dist'),
       filename: 'react.js'
     },
     plugins: [

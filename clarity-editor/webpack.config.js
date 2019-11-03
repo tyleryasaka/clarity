@@ -1,5 +1,11 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const createElectronReloadWebpackPlugin = require('electron-reload-webpack-plugin')
+
+const ElectronReloadWebpackPlugin = createElectronReloadWebpackPlugin({
+  path: './dist/index.js',
+  logLevel: 0
+})
 
 module.exports = [
   {
@@ -35,7 +41,8 @@ module.exports = [
     plugins: [
       new HtmlWebpackPlugin({
         template: './src/index.html'
-      })
+      }),
+      ElectronReloadWebpackPlugin()
     ]
   }
 ]

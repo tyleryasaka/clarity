@@ -1,0 +1,20 @@
+{
+  "name": "clarity-editor",
+  "version": "0.0.0",
+  "description": "Clarity Editor: Coding for the modern world.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyleryasaka/clarity.git"
+  },
+  "author": "Tyler Yasaka",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/tyleryasaka/clarity/issues"
+  },
+  "homepage": "https://github.com/tyleryasaka/clarity#readme"
+}

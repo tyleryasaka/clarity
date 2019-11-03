@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/tyleryasaka/clarity/issues"
   },
-  "homepage": "https://github.com/tyleryasaka/clarity#readme"
+  "homepage": "https://github.com/tyleryasaka/clarity#readme",
+  "devDependencies": {
+    "electron": "^7.0.1"
+  }
 }

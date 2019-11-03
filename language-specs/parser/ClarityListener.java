@@ -17,16 +17,6 @@ public interface ClarityListener extends ParseTreeListener {
 	 */
 	void exitR(ClarityParser.RContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ClarityParser#whitespace}.
-	 * @param ctx the parse tree
-	 */
-	void enterWhitespace(ClarityParser.WhitespaceContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ClarityParser#whitespace}.
-	 * @param ctx the parse tree
-	 */
-	void exitWhitespace(ClarityParser.WhitespaceContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link ClarityParser#integer}.
 	 * @param ctx the parse tree
 	 */
@@ -36,16 +26,6 @@ public interface ClarityListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitInteger(ClarityParser.IntegerContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ClarityParser#string}.
-	 * @param ctx the parse tree
-	 */
-	void enterString(ClarityParser.StringContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ClarityParser#string}.
-	 * @param ctx the parse tree
-	 */
-	void exitString(ClarityParser.StringContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ClarityParser#identifier}.
 	 * @param ctx the parse tree

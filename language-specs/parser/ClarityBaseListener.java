@@ -27,18 +27,6 @@ public class ClarityBaseListener implements ClarityListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterWhitespace(ClarityParser.WhitespaceContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWhitespace(ClarityParser.WhitespaceContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterInteger(ClarityParser.IntegerContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -46,18 +34,6 @@ public class ClarityBaseListener implements ClarityListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitInteger(ClarityParser.IntegerContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterString(ClarityParser.StringContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitString(ClarityParser.StringContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

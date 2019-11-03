@@ -1,0 +1,21 @@
+module MyModule "my module description" {
+  tuple RGBColor "an RGB color" (Integer, Integer, Integer)
+  struct Box "an abstract box" { width: Integer, height: Integer, color: RGBColor  }
+  module NestedModule "a module within a module" {
+    tuple HexColor "a hex color" (String, String, String, String, String, String)
+    function RGBColor myFunc "a nonsensical funky func" (RGBColor color1, RGBColor color2, Box myBox) {
+      Integer fromColor1 <- color1[0];
+      Integer fromColor2 <- color2[0];
+      Integer firstBoxRGB <- myBox["color"][0];
+      RGBColor newColor <- (fromColor1, fromColor2, firstBoxRGB);
+      return newColor;
+    }
+    function Integer anotherFunc "another nonsensical funky func" (RGBColor color1, RGBColor color2, Box myBox) {
+      Integer fromColor1 <- color1[0];
+      Integer fromColor2 <- color2[0];
+      Integer firstBoxRGB <- myBox["color"][0];
+      Integer sum <- plus(a: fromColor1, b: plus(a: fromColor2, b: firstBoxRGB));
+      return sum;
+    }
+  }
+}

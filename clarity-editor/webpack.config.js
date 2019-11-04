@@ -47,6 +47,15 @@ module.exports = [
         }
       }]
     },
+    resolve: {
+      extensions: [
+        '.webpack.js',
+        '.web.js',
+        '.tsx',
+        '.ts',
+        '.js'
+      ]
+    },
     output: {
       path: path.join(__dirname, './dist'),
       filename: 'react.js'

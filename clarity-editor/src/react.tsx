@@ -1,12 +1,14 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { Button } from '@blueprintjs/core'
+import { FocusStyleManager, Classes } from '@blueprintjs/core'
+import MainNav from './components/main-nav'
 import './styles/app.css'
 
+FocusStyleManager.onlyShowFocusOnTabs()
+
 const Index = () => {
-  return <div>
-    Hello world!
-    <Button intent="success" text="button content" />
+  return <div className={Classes.DARK}>
+    <MainNav />
   </div>
 }
 

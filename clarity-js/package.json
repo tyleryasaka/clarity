@@ -1,0 +1,22 @@
+{
+  "name": "clarity-js",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/load-test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyleryasaka/clarity.git"
+  },
+  "author": "Tyler Yasaka",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/tyleryasaka/clarity/issues"
+  },
+  "homepage": "https://github.com/tyleryasaka/clarity#readme",
+  "dependencies": {
+    "ajv": "^6.10.2"
+  }
+}

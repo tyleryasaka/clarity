@@ -29,11 +29,24 @@ module.exports = [
     entry: './src/react.tsx',
     target: 'electron-renderer',
     devtool: 'source-map',
-    module: { rules: [{
-      test: /\.ts(x?)$/,
-      include: /src/,
-      use: [{ loader: 'ts-loader' }]
-    }] },
+    module: {
+      rules: [{
+        test: /\.ts(x?)$/,
+        include: /src/,
+        use: [{ loader: 'ts-loader' }]
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/i,
+        loader: 'url-loader',
+        options: {
+          limit: 8192
+        }
+      }]
+    },
     output: {
       path: path.join(__dirname, './dist'),
       filename: 'react.js'

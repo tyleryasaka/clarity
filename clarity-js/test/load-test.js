@@ -6,7 +6,7 @@ const { load } = require('../index')
 
 const entireProgram = fs.readFileSync('./test/stubs/program.json', 'utf8')
 
-describe('schemas', function () {
+describe('load', function () {
   describe('all together', function () {
     it('should validate', function () {
       const isValid = load(entireProgram)

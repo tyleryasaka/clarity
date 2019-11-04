@@ -11,7 +11,7 @@ module.exports = function () {
       'description': { 'type': 'string' },
       'members': {
         'type': 'array',
-        'items': { '$ref': 'identifier' }
+        'items': { '$ref': 'hidden-identifier' }
       }
     }
   }

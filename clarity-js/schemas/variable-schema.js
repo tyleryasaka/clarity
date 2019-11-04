@@ -9,7 +9,7 @@ module.exports = function () {
       'type': { '$ref': 'hidden-identifier' },
       'name': { '$ref': 'hidden-identifier' },
       'description': { 'type': 'string' },
-      'value': { '$ref': 'call' }
+      'value': { '$ref': 'value' }
     }
   }
 }

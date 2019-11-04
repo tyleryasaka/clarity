@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test/load-test.js"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,8 @@
   "homepage": "https://github.com/tyleryasaka/clarity#readme",
   "dependencies": {
     "ajv": "^6.10.2"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2"
   }
 }

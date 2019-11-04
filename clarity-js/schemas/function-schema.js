@@ -14,6 +14,8 @@ module.exports = function () {
         'type': 'array',
         'items': {
           'type': 'object',
+          'additionalProperties': false,
+          'required': ['type', 'name'],
           'properties': {
             'type': { '$ref': 'hidden-identifier' },
             'name': { '$ref': 'hidden-identifier' }
@@ -21,10 +23,13 @@ module.exports = function () {
         }
       },
       'variables': {
-        'type': 'array'
+        'type': 'array',
+        'items': {
+          '$ref': 'variable'
+        }
       },
       'returnValue': {
-        'type': 'object'
+        '$ref': 'value'
       }
     }
   }

@@ -35,6 +35,7 @@ describe('schemas', function () {
       assert.ok(validate('asdf123'))
       assert.ok(validate('asdf'))
       assert.ok(validate('0'))
+      assert.ok(validate('abc.123'))
       assert.ok(!validate('asdf 123'))
       assert.ok(!validate('asdf-123'))
       assert.ok(!validate('asdf_adsf'))

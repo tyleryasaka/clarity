@@ -4,6 +4,6 @@ module.exports = function () {
     '$id': 'clarity/hidden-identifier',
     'type': 'string',
     'additionalProperties': false,
-    'pattern': '^[A-Za-z0-9]+$'
+    'pattern': '^[A-Za-z0-9.]+$'
   }
 }

@@ -83,7 +83,7 @@
                     "function": "core.0",
                     "args": {
                       "source": { "variable": "9" },
-                      "location": 0
+                      "location": "0"
                     }
                   }
                 },
@@ -95,7 +95,7 @@
                     "function": "core.0",
                     "args": {
                       "source": { "variable": "10" },
-                      "location": 0
+                      "location": "0"
                     }
                   }
                 },
@@ -113,7 +113,7 @@
                           "property": "6"
                         }
                       },
-                      "location": 0
+                      "location": "0"
                     }
                   }
                 },

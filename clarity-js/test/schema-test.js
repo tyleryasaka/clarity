@@ -126,7 +126,7 @@ describe('schemas', function () {
       .compile(valueSchema)
     it('should validate', function () {
       assert.ok(validate('hello'))
-      assert.ok(validate(1))
+      assert.ok(validate('1'))
       assert.ok(validate('1'))
       assert.ok(validate({
         'function': '123abc',
@@ -153,7 +153,7 @@ describe('schemas', function () {
         'args': {
           'hello': {
             'function': '123abc',
-            'args': { 'world': 1 }
+            'args': { 'world': '1' }
           }
         }
       }))
@@ -175,7 +175,7 @@ describe('schemas', function () {
         'type': '1',
         'name': 'a',
         'description': 'hello world!',
-        'value': 123
+        'value': '123'
       }))
       assert.ok(validate({
         'type': '1',
@@ -189,7 +189,7 @@ describe('schemas', function () {
       assert.ok(!validate({
         'type': '1',
         'description': 'hello world!',
-        'value': 123
+        'value': '123'
       }))
       assert.ok(!validate({
         'type': '1',

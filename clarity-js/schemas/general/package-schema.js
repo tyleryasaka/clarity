@@ -6,7 +6,7 @@ module.exports = function () {
     'additionalProperties': false,
     'required': ['element', 'name', 'description', 'dictionary', 'contents'],
     'properties': {
-      'element': { '$ref': 'element-enum' },
+      'element': { 'const': 'package' },
       'name': { '$ref': 'identifier' },
       'description': { 'type': 'string' },
       'dictionary': {
@@ -20,7 +20,8 @@ module.exports = function () {
         'type': 'array',
         'items': {
           'oneOf': [
-            { '$ref': 'module' }
+            { '$ref': 'module' },
+            { '$ref': 'definition' }
           ]
         }
       }

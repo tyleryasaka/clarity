@@ -1,17 +1,22 @@
 module.exports = function () {
   return {
     '$schema': 'http://json-schema.org/schema#',
-    '$id': 'clarity/tuple',
+    '$id': 'clarity/module',
     'type': 'object',
     'additionalProperties': false,
-    'required': ['element', 'name', 'description', 'members'],
+    'required': ['element', 'name', 'description', 'contents'],
     'properties': {
-      'element': { '$ref': 'element-enum' },
+      'element': { 'const': 'module' },
       'name': { '$ref': 'hidden-identifier' },
       'description': { 'type': 'string' },
-      'members': {
+      'contents': {
         'type': 'array',
-        'items': { '$ref': 'hidden-identifier' }
+        'items': {
+          'oneOf': [
+            { '$ref': 'module' },
+            { '$ref': 'definition' }
+          ]
+        }
       }
     }
   }

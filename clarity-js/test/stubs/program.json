@@ -74,69 +74,112 @@
                 { "type": "1", "name": "10" },
                 { "type": "2", "name": "11" }
               ],
-              "variables": [
+              "definitions": [
                 {
-                  "type": "Integer",
+                  "element": "variable",
+                  "type": "core.1",
                   "name": "12",
                   "description": "asdf",
                   "value": {
-                    "function": "core.0",
-                    "args": {
-                      "source": { "variable": "9" },
-                      "location": "0"
-                    }
-                  }
-                },
-                {
-                  "type": "Integer",
-                  "name": "13",
-                  "description": "asdf",
-                  "value": {
-                    "function": "core.0",
-                    "args": {
-                      "source": { "variable": "10" },
-                      "location": "0"
-                    }
-                  }
-                },
-                {
-                  "type": "Integer",
-                  "name": "14",
-                  "description": "asdf",
-                  "value": {
+                    "element": "call",
                     "function": "core.0",
                     "args": {
                       "source": {
-                        "function": "core.1",
-                        "args": {
-                          "source": { "variable": "11" },
-                          "property": "6"
-                        }
+                        "element": "variable-ref",
+                        "variable": "9"
                       },
-                      "location": "0"
+                      "location": {
+                        "element": "integer-literal",
+                        "value": "0"
+                      }
                     }
                   }
                 },
                 {
-                  "type": "Integer",
+                  "element": "variable",
+                  "type": "core.1",
+                  "name": "13",
+                  "description": "asdf",
+                  "value": {
+                    "element": "call",
+                    "function": "core.0",
+                    "args": {
+                      "source": {
+                        "element": "variable-ref",
+                        "variable": "10"
+                      },
+                      "location": {
+                        "element": "integer-literal",
+                        "value": "0"
+                      }
+                    }
+                  }
+                },
+                {
+                  "element": "variable",
+                  "type": "core.1",
+                  "name": "14",
+                  "description": "asdf",
+                  "value": {
+                    "element": "call",
+                    "function": "core.0",
+                    "args": {
+                      "source": {
+                        "element": "call",
+                        "function": "core.1",
+                        "args": {
+                          "source": {
+                            "element": "variable-ref",
+                            "variable": "11"
+                          },
+                          "property": {
+                            "element": "integer-literal",
+                            "value": "6"
+                          }
+                        }
+                      },
+                      "location": {
+                        "element": "integer-literal",
+                        "value": "0"
+                      }
+                    }
+                  }
+                },
+                {
+                  "element": "variable",
+                  "type": "1",
                   "name": "15",
                   "description": "asdf",
                   "value": {
+                    "element": "call",
                     "function": "core.2",
                     "args": {
-                      "a": { "variable": "12" },
+                      "a": {
+                        "element": "variable-ref",
+                        "variable": "12"
+                      },
                       "b": {
+                        "element": "call",
                         "function": "core.2",
                         "args": {
-                          "a": { "variable": "13" },
-                          "b": { "variable": "14" }
+                          "a": {
+                            "element": "variable-ref",
+                            "variable": "13"
+                          },
+                          "b": {
+                            "element": "variable-ref",
+                            "variable": "14"
+                          }
                         }
                       }
                     }
                   }
                 }
               ],
-              "returnValue": { "variable": "15" }
+              "returnValue": {
+                "element": "variable-ref",
+                "variable": "15"
+              }
             }
           ]
         }

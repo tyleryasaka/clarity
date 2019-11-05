@@ -5,16 +5,18 @@ const assert = require('assert')
 
 const identifierSchema = require('../schemas/general/identifier-schema')()
 const hiddenIdentifierSchema = require('../schemas/general/hidden-identifier-schema')()
-const variableSchema = require('../schemas/general/variable-schema')()
-const functionSchema = require('../schemas/element/function-schema')()
-const tupleSchema = require('../schemas/element/tuple-schema')()
-const structSchema = require('../schemas/element/struct-schema')()
-const moduleSchema = require('../schemas/element/module-schema')()
-const packageSchema = require('../schemas/element/package-schema')()
-const elementEnumSchema = require('../schemas/element/element-enum-schema')()
+const moduleSchema = require('../schemas/general/module-schema')()
+const packageSchema = require('../schemas/general/package-schema')()
+const definitionSchema = require('../schemas/definition/definition-schema')()
+const functionSchema = require('../schemas/definition/function-schema')()
+const tupleSchema = require('../schemas/definition/tuple-schema')()
+const structSchema = require('../schemas/definition/struct-schema')()
+const variableSchema = require('../schemas/definition/variable-schema')()
 const valueSchema = require('../schemas/value/value-schema')()
 const callSchema = require('../schemas/value/call-schema')()
 const variableRefSchema = require('../schemas/value/variable-ref-schema')()
+const stringLiteralSchema = require('../schemas/value/string-literal-schema')()
+const integerLiteralSchema = require('../schemas/value/integer-literal-schema')()
 
 describe('schemas', function () {
   describe('identifierSchema', function () {
@@ -42,37 +44,22 @@ describe('schemas', function () {
     })
   })
 
-  describe('elementEnumSchema', function () {
-    const ajv = new Ajv()
-    const validate = ajv.compile(elementEnumSchema)
-    it('should validate', function () {
-      assert.ok(validate('package'))
-      assert.ok(validate('module'))
-      assert.ok(validate('function'))
-      assert.ok(validate('tuple'))
-      assert.ok(validate('struct'))
-      assert.ok(!validate('asdf'))
-    })
-  })
-
   describe('variableRefSchema', function () {
     const ajv = new Ajv()
     const validate = ajv.addSchema(hiddenIdentifierSchema)
       .compile(variableRefSchema)
     it('should validate', function () {
-      assert.ok(validate({ 'variable': 'asdf123' }))
-      assert.ok(validate({ 'variable': '1' }))
-      assert.ok(!validate({ 'variable': 'asdf-123' }))
-      assert.ok(!validate({ 'variable': 'asdf 123' }))
-      assert.ok(!validate({ 'hello': 'world' }))
+      assert.ok(validate({ 'element': 'variable-ref', 'variable': 'asdf123' }))
+      assert.ok(validate({ 'element': 'variable-ref', 'variable': '1' }))
+      assert.ok(!validate({ 'element': 'variable-ref', 'variable': 'asdf-123' }))
+      assert.ok(!validate({ 'element': 'variable-ref', 'variable': 'asdf 123' }))
+      assert.ok(!validate({ 'element': 'variable-ref', 'hello': 'world' }))
     })
   })
 
   describe('tupleSchema', function () {
     const ajv = new Ajv()
-    const validate = ajv.addSchema(hiddenIdentifierSchema)
-      .addSchema(elementEnumSchema)
-      .compile(tupleSchema)
+    const validate = ajv.addSchema(hiddenIdentifierSchema).compile(tupleSchema)
     it('should validate', function () {
       assert.ok(validate({
         'element': 'tuple',
@@ -91,9 +78,7 @@ describe('schemas', function () {
 
   describe('structSchema', function () {
     const ajv = new Ajv()
-    const validate = ajv.addSchema(hiddenIdentifierSchema)
-      .addSchema(elementEnumSchema)
-      .compile(structSchema)
+    const validate = ajv.addSchema(hiddenIdentifierSchema).compile(structSchema)
     it('should validate', function () {
       assert.ok(validate({
         'element': 'struct',
@@ -123,16 +108,21 @@ describe('schemas', function () {
     const validate = ajv.addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
       .addSchema(callSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
       .compile(valueSchema)
     it('should validate', function () {
-      assert.ok(validate('hello'))
-      assert.ok(validate('1'))
-      assert.ok(validate('1'))
+      assert.ok(validate({ 'element': 'string-literal', 'value': 'hello' }))
+      assert.ok(validate({ 'element': 'string-literal', 'value': '1' }))
       assert.ok(validate({
+        'element': 'call',
         'function': '123abc',
-        'args': { 'hello': 'world' }
+        'args': { 'hello': { 'element': 'string-literal', 'value': 'world' } }
       }))
-      assert.ok(validate({ 'variable': 'abc123' }))
+      assert.ok(validate({
+        'element': 'variable-ref',
+        'variable': '7'
+      }))
       assert.ok(!validate({ 'hello': 'world' }))
     })
   })
@@ -141,23 +131,29 @@ describe('schemas', function () {
     const ajv = new Ajv()
     const validate = ajv.addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
       .addSchema(valueSchema)
       .compile(callSchema)
     it('should validate', function () {
       assert.ok(validate({
+        'element': 'call',
         'function': '123abc',
-        'args': { 'hello': 'world' }
+        'args': { 'hello': { 'element': 'string-literal', 'value': 'world' } }
       }))
       assert.ok(validate({
+        'element': 'call',
         'function': '123abc',
         'args': {
           'hello': {
+            'element': 'call',
             'function': '123abc',
-            'args': { 'world': '1' }
+            'args': { 'world': { 'element': 'string-literal', 'value': '1' } }
           }
         }
       }))
       assert.ok(!validate({
+        'element': 'call',
         'function': '123abc'
       }))
     })
@@ -168,25 +164,31 @@ describe('schemas', function () {
     const validate = ajv.addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
       .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
       .addSchema(callSchema)
       .compile(variableSchema)
     it('should validate', function () {
       assert.ok(validate({
+        'element': 'variable',
         'type': '1',
         'name': 'a',
         'description': 'hello world!',
-        'value': '123'
+        'value': { 'element': 'string-literal', 'value': '123' }
       }))
       assert.ok(validate({
+        'element': 'variable',
         'type': '1',
         'name': 'a',
         'description': 'hello world!',
         'value': {
+          'element': 'call',
           'function': '123abc',
-          'args': { 'hello': 'world' }
+          'args': { 'hello': { 'element': 'string-literal', 'value': 'world' } }
         }
       }))
       assert.ok(!validate({
+        'element': 'variable',
         'type': '1',
         'description': 'hello world!',
         'value': '123'
@@ -202,12 +204,16 @@ describe('schemas', function () {
 
   describe('functionSchema', function () {
     const ajv = new Ajv()
-    const validate = ajv.addSchema(elementEnumSchema)
-      .addSchema(hiddenIdentifierSchema)
+    const validate = ajv.addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
       .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
       .addSchema(callSchema)
       .addSchema(variableSchema)
+      .addSchema(definitionSchema)
+      .addSchema(tupleSchema)
+      .addSchema(structSchema)
       .compile(functionSchema)
     it('should validate', function () {
       assert.ok(validate({
@@ -218,31 +224,35 @@ describe('schemas', function () {
         'params': [
           { 'type': 'abc', 'name': '123' }
         ],
-        'variables': [
+        'definitions': [
           {
-            'type': '1',
+            'element': 'variable',
             'name': 'a',
             'description': 'hello world!',
+            'type': '1',
             'value': {
+              'element': 'call',
               'function': '123abc',
-              'args': { 'hello': 'world' }
+              'args': { 'hello': { 'element': 'string-literal', 'value': 'world' } }
             }
           }
         ],
-        'returnValue': { 'variable': 'abc123' }
+        'returnValue': { 'element': 'string-literal', 'value': 'abc-123' }
       }))
     })
   })
 
   describe('moduleSchema', function () {
     const ajv = new Ajv()
-    const validate = ajv.addSchema(elementEnumSchema)
-      .addSchema(hiddenIdentifierSchema)
+    const validate = ajv.addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
       .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
       .addSchema(callSchema)
       .addSchema(variableSchema)
       .addSchema(functionSchema)
+      .addSchema(definitionSchema)
       .addSchema(tupleSchema)
       .addSchema(structSchema)
       .compile(moduleSchema)
@@ -265,14 +275,16 @@ describe('schemas', function () {
 
   describe('packageSchema', function () {
     const ajv = new Ajv()
-    const validate = ajv.addSchema(elementEnumSchema)
-      .addSchema(identifierSchema)
+    const validate = ajv.addSchema(identifierSchema)
       .addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
       .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
       .addSchema(callSchema)
       .addSchema(variableSchema)
       .addSchema(functionSchema)
+      .addSchema(definitionSchema)
       .addSchema(tupleSchema)
       .addSchema(structSchema)
       .addSchema(moduleSchema)

@@ -4,8 +4,9 @@ module.exports = function () {
     '$id': 'clarity/call',
     'type': 'object',
     'additionalProperties': false,
-    'required': ['function', 'args'],
+    'required': ['element', 'function', 'args'],
     'properties': {
+      'element': { 'const': 'call' },
       'function': { '$ref': 'hidden-identifier' },
       'args': {
         'type': 'object',

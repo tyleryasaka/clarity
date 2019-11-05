@@ -3,7 +3,8 @@ module.exports = function () {
     '$schema': 'http://json-schema.org/schema#',
     '$id': 'clarity/value',
     'oneOf': [
-      { 'type': 'string' },
+      { '$ref': 'string-literal' },
+      { '$ref': 'integer-literal' },
       { '$ref': 'call' },
       { '$ref': 'variable-ref' }
     ]

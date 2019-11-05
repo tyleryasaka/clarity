@@ -4,8 +4,9 @@ module.exports = function () {
     '$id': 'clarity/variable-ref',
     'type': 'object',
     'additionalProperties': false,
-    'required': ['variable'],
+    'required': ['element', 'variable'],
     'properties': {
+      'element': { 'const': 'variable-ref' },
       'variable': {
         '$ref': 'hidden-identifier'
       }

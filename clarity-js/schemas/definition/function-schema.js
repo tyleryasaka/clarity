@@ -4,9 +4,9 @@ module.exports = function () {
     '$id': 'clarity/function',
     'type': 'object',
     'additionalProperties': false,
-    'required': ['element', 'name', 'description', 'returnType', 'params', 'variables', 'returnValue'],
+    'required': ['element', 'name', 'description', 'returnType', 'params', 'definitions', 'returnValue'],
     'properties': {
-      'element': { '$ref': 'element-enum' },
+      'element': { 'const': 'function' },
       'name': { '$ref': 'hidden-identifier' },
       'description': { 'type': 'string' },
       'returnType': { '$ref': 'hidden-identifier' },
@@ -22,10 +22,10 @@ module.exports = function () {
           }
         }
       },
-      'variables': {
+      'definitions': {
         'type': 'array',
         'items': {
-          '$ref': 'variable'
+          '$ref': 'definition'
         }
       },
       'returnValue': {

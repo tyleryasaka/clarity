@@ -6,7 +6,7 @@ module.exports = function () {
     'additionalProperties': false,
     'required': ['element', 'name', 'description', 'properties'],
     'properties': {
-      'element': { '$ref': 'element-enum' },
+      'element': { 'const': 'struct' },
       'name': { '$ref': 'hidden-identifier' },
       'description': { 'type': 'string' },
       'properties': {

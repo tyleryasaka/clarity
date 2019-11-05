@@ -17,6 +17,8 @@ const callSchema = require('../schemas/value/call-schema')()
 const variableRefSchema = require('../schemas/value/variable-ref-schema')()
 const stringLiteralSchema = require('../schemas/value/string-literal-schema')()
 const integerLiteralSchema = require('../schemas/value/integer-literal-schema')()
+const tupleLiteralSchema = require('../schemas/value/tuple-literal-schema')()
+const structLiteralSchema = require('../schemas/value/struct-literal-schema')()
 
 describe('schemas', function () {
   describe('identifierSchema', function () {
@@ -110,6 +112,8 @@ describe('schemas', function () {
       .addSchema(callSchema)
       .addSchema(stringLiteralSchema)
       .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
       .compile(valueSchema)
     it('should validate', function () {
       assert.ok(validate({ 'element': 'string-literal', 'value': 'hello' }))
@@ -127,12 +131,100 @@ describe('schemas', function () {
     })
   })
 
+  describe('integerLiteralSchema', function () {
+    const ajv = new Ajv()
+    const validate = ajv.addSchema(hiddenIdentifierSchema)
+      .addSchema(variableRefSchema)
+      .addSchema(callSchema)
+      .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
+      .compile(integerLiteralSchema)
+    it('should validate', function () {
+      assert.ok(validate({ 'element': 'integer-literal', 'value': '0' }))
+      assert.ok(validate({ 'element': 'integer-literal', 'value': '9' }))
+      assert.ok(validate({ 'element': 'integer-literal', 'value': '0101110' }))
+      assert.ok(!validate({ 'element': 'integer-literal', 'value': '0101 110' }))
+      assert.ok(!validate({ 'element': 'integer-literal', 'value': '1,230' }))
+      assert.ok(!validate({ 'element': 'integer-literal', 'value': '123abc' }))
+    })
+  })
+
+  describe('stringLiteralSchema', function () {
+    const ajv = new Ajv()
+    const validate = ajv.addSchema(hiddenIdentifierSchema)
+      .addSchema(variableRefSchema)
+      .addSchema(callSchema)
+      .addSchema(valueSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(integerLiteralSchema)
+      .addSchema(structLiteralSchema)
+      .compile(stringLiteralSchema)
+    it('should validate', function () {
+      assert.ok(validate({ 'element': 'string-literal', 'value': 'abc 123' }))
+      assert.ok(validate({ 'element': 'string-literal', 'value': 'hello world!' }))
+      assert.ok(validate({ 'element': 'string-literal', 'value': '0101110' }))
+      assert.ok(validate({ 'element': 'string-literal', 'value': 'true' }))
+      assert.ok(!validate({ 'element': 'string-literal', 'value': { 'hello': 'world' } }))
+    })
+  })
+
+  describe('tupleLiteralSchema', function () {
+    const ajv = new Ajv()
+    const validate = ajv.addSchema(hiddenIdentifierSchema)
+      .addSchema(variableRefSchema)
+      .addSchema(callSchema)
+      .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
+      .addSchema(structLiteralSchema)
+      .compile(tupleLiteralSchema)
+    it('should validate', function () {
+      assert.ok(validate({
+        'element': 'tuple-literal',
+        'members': [{ 'element': 'string-literal', 'value': '1' }]
+      }))
+      assert.ok(!validate({
+        'element': 'tuple-literal',
+        'members': ['abc 123']
+      }))
+    })
+  })
+
+  describe('structLiteralSchema', function () {
+    const ajv = new Ajv()
+    const validate = ajv.addSchema(hiddenIdentifierSchema)
+      .addSchema(variableRefSchema)
+      .addSchema(callSchema)
+      .addSchema(valueSchema)
+      .addSchema(stringLiteralSchema)
+      .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .compile(structLiteralSchema)
+    it('should validate', function () {
+      assert.ok(validate({
+        'element': 'struct-literal',
+        'properties': [{
+          'name': '1',
+          'value': { 'element': 'string-literal', 'value': '1' }
+        }]
+      }))
+      assert.ok(!validate({
+        'element': 'struct-literal',
+        'properties': [{ 'element': 'string-literal', 'value': '1' }]
+      }))
+    })
+  })
+
   describe('callSchema', function () {
     const ajv = new Ajv()
     const validate = ajv.addSchema(hiddenIdentifierSchema)
       .addSchema(variableRefSchema)
       .addSchema(stringLiteralSchema)
       .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
       .addSchema(valueSchema)
       .compile(callSchema)
     it('should validate', function () {
@@ -166,6 +258,8 @@ describe('schemas', function () {
       .addSchema(valueSchema)
       .addSchema(stringLiteralSchema)
       .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
       .addSchema(callSchema)
       .compile(variableSchema)
     it('should validate', function () {
@@ -209,6 +303,8 @@ describe('schemas', function () {
       .addSchema(valueSchema)
       .addSchema(stringLiteralSchema)
       .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
       .addSchema(callSchema)
       .addSchema(variableSchema)
       .addSchema(definitionSchema)
@@ -249,6 +345,8 @@ describe('schemas', function () {
       .addSchema(valueSchema)
       .addSchema(stringLiteralSchema)
       .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
       .addSchema(callSchema)
       .addSchema(variableSchema)
       .addSchema(functionSchema)
@@ -281,6 +379,8 @@ describe('schemas', function () {
       .addSchema(valueSchema)
       .addSchema(stringLiteralSchema)
       .addSchema(integerLiteralSchema)
+      .addSchema(tupleLiteralSchema)
+      .addSchema(structLiteralSchema)
       .addSchema(callSchema)
       .addSchema(variableSchema)
       .addSchema(functionSchema)

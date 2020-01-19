@@ -13,6 +13,7 @@ module.exports = function validate (json) {
 
   entitiesJSON.forEach(e => {
     const entity = entitiesRef[e.id]
+
     entity.params = {}
     e.params.forEach(p => {
       const param = entity.params[p.id]
@@ -24,10 +25,21 @@ module.exports = function validate (json) {
         description: p.description
       }
     })
+
+    entity.domain = processAbstractable(e.id, entity, e.domain, errors)
   })
 
   return {
     program: errors.length ? null : entitiesRef,
     errors
   }
+}
+
+function processAbstractable (entityId, entity, abstractable, errors) {
+  if (abstractable.t === 'd') {
+    if (entity.params[abstractable.p] === undefined) {
+      errors.push(`Entity ${entityId}: Param ${abstractable.p} does not exist`)
+    }
+  }
+  return abstractable
 }

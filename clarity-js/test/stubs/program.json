@@ -1,189 +1,117 @@
 {
-  "element": "package",
-  "name": "my-package",
-  "description": "a package",
-  "dictionary": {
-    "0": "MyModule",
-    "1": "RGBColor",
-    "2": "Box_Yeah",
-    "3": "NestedModule",
-    "4": "width",
-    "5": "height",
-    "6": "color",
-    "7": "HexColor",
-    "8": "myFunc",
-    "9": "color1",
-    "10": "color2",
-    "11": "myBox",
-    "12": "fromColor1",
-    "13": "fromColor2",
-    "14": "firstBoxRGB",
-    "15": "sum"
-  },
-  "contents": [
+  "entities": [
     {
-      "element": "module",
-      "name": "0",
-      "description": "my module description",
-      "contents": [
+      "id": "1",
+      "name": "trivial abstract",
+      "description": "",
+      "params": [
         {
-          "element": "tuple",
-          "name": "1",
-          "description": "an RGB color",
-          "members": [
-            "Integer",
-            "Integer",
-            "Integer"
-          ]
+          "id": "1",
+          "name": "my domain",
+          "description": ""
         },
         {
-          "element": "struct",
-          "name": "2",
-          "description": "an abstract box",
-          "properties": [
-            { "type": "Integer", "name": "4" },
-            { "type": "Integer", "name": "5" },
-            { "type": "1", "name": "6" }
-          ]
-        },
+          "id": "2",
+          "name": "my value",
+          "description": ""
+        }
+      ],
+      "domain": {
+        "t": "d",
+        "p": "1"
+      },
+      "value": {
+        "t": "d",
+        "p": "2"
+      }
+    },
+    {
+      "id": "2",
+      "name": "hello world func",
+      "description": "",
+      "params": [
         {
-          "element": "module",
-          "name": "3",
-          "description": "a module within a module",
-          "contents": [
+          "id": "1",
+          "name": "my bool",
+          "description": ""
+        }
+      ],
+      "domain": {
+        "t": "s",
+        "v": "string"
+      },
+      "value": {
+        "t": "s",
+        "v": {
+          "type": "ifelse",
+          "condition": {
+            "t": "d",
+            "p": "1"
+          },
+          "if": {
+            "t": "s",
+            "v": {
+              "type": "literal-string",
+              "string": "hello"
+            }
+          },
+          "else": {
+            "t": "s",
+            "v": {
+              "type": "literal-string",
+              "string": "world"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "3",
+      "params": [],
+      "domain": {
+        "t": "s",
+        "v": "string"
+      },
+      "value": {
+        "t": "s",
+        "v": {
+          "type": "reference",
+          "entityId": "2",
+          "args": [
             {
-              "element": "tuple",
-              "name": "7",
-              "description": "a hex color",
-              "members": [
-                "String",
-                "String",
-                "String",
-                "String",
-                "String",
-                "String"
-              ]
-            },
-            {
-              "element": "function",
-              "name": "8",
-              "description": "a nonsensical funky func",
-              "returnType": "1",
-              "params": [
-                { "type": "1", "name": "9" },
-                { "type": "1", "name": "10" },
-                { "type": "2", "name": "11" }
-              ],
-              "definitions": [
-                {
-                  "element": "variable",
-                  "type": "core.1",
-                  "name": "12",
-                  "description": "asdf",
-                  "value": {
-                    "element": "call",
-                    "function": "core.0",
-                    "args": {
-                      "source": {
-                        "element": "variable-ref",
-                        "variable": "9"
-                      },
-                      "location": {
-                        "element": "integer-literal",
-                        "value": "0"
-                      }
-                    }
-                  }
-                },
-                {
-                  "element": "variable",
-                  "type": "core.1",
-                  "name": "13",
-                  "description": "asdf",
-                  "value": {
-                    "element": "call",
-                    "function": "core.0",
-                    "args": {
-                      "source": {
-                        "element": "variable-ref",
-                        "variable": "10"
-                      },
-                      "location": {
-                        "element": "integer-literal",
-                        "value": "0"
-                      }
-                    }
-                  }
-                },
-                {
-                  "element": "variable",
-                  "type": "core.1",
-                  "name": "14",
-                  "description": "asdf",
-                  "value": {
-                    "element": "call",
-                    "function": "core.0",
-                    "args": {
-                      "source": {
-                        "element": "call",
-                        "function": "core.1",
-                        "args": {
-                          "source": {
-                            "element": "variable-ref",
-                            "variable": "11"
-                          },
-                          "property": {
-                            "element": "integer-literal",
-                            "value": "6"
-                          }
-                        }
-                      },
-                      "location": {
-                        "element": "integer-literal",
-                        "value": "0"
-                      }
-                    }
-                  }
-                },
-                {
-                  "element": "variable",
-                  "type": "1",
-                  "name": "15",
-                  "description": "asdf",
-                  "value": {
-                    "element": "call",
-                    "function": "core.2",
-                    "args": {
-                      "a": {
-                        "element": "variable-ref",
-                        "variable": "12"
-                      },
-                      "b": {
-                        "element": "call",
-                        "function": "core.2",
-                        "args": {
-                          "a": {
-                            "element": "variable-ref",
-                            "variable": "13"
-                          },
-                          "b": {
-                            "element": "variable-ref",
-                            "variable": "14"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ],
-              "returnValue": {
-                "element": "variable-ref",
-                "variable": "15"
+              "p": "1",
+              "v": {
+                "type": "literal-bool",
+                "bool": "T"
               }
             }
           ]
         }
-      ]
+      }
+    },
+    {
+      "id": "4",
+      "params": [],
+      "domain": {
+        "t": "s",
+        "v": "string"
+      },
+      "value": {
+        "t": "s",
+        "v": {
+          "type": "reference",
+          "entityId": "2",
+          "args": [
+            {
+              "p": "1",
+              "v": {
+                "type": "literal-bool",
+                "bool": "F"
+              }
+            }
+          ]
+        }
+      }
     }
   ]
 }

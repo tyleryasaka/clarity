@@ -82,8 +82,24 @@ function validateValue (value, paramRefs, context) {
 function validateApplication (app, paramRefs, context) {
   const requiredProps = ['definition', 'args']
   validateRequiredProps(app, requiredProps, context)
-  // TODO: validate definition is a valid reference
-  validateArgs(app.args, paramRefs, context)
+  const def = _.find(context.program.definitions, d => d.id === app.definition)
+  if (def === undefined) {
+    context.errors.push('Referenced definition not defined')
+  }
+  validateArgs(app.args, def, paramRefs, context)
+}
+
+function validateArgs (args, definition, paramRefs, context) {
+  const requiredProps = ['p', 'value']
+  args.forEach(arg => {
+    validateRequiredProps(arg, requiredProps, context)
+    // TODO: validate p and value in same domain
+    const paramIds = definition.params.map(d => d.id)
+    if (!_.includes(paramIds, arg.p)) {
+      context.errors.push('Referenced param not defined')
+    }
+    validateValue(arg.value, paramRefs, context)
+  })
 }
 
 function validateIfelse (ifelse, paramRefs, context) {
@@ -94,16 +110,6 @@ function validateIfelse (ifelse, paramRefs, context) {
   // TODO: validate if and else same domain
   validateValue(ifelse.if, paramRefs, context)
   validateValue(ifelse.else, paramRefs, context)
-}
-
-function validateArgs (args, paramRefs, context) {
-  const requiredProps = ['p', 'value']
-  args.forEach(arg => {
-    validateRequiredProps(arg, requiredProps, context)
-    // TODO: validate p and value in same domain
-    // TODO: validate p maps to a param on definition
-    validateValue(arg.value, paramRefs, context)
-  })
 }
 
 function validateVariable (item, paramRefs, context) {

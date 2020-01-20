@@ -57,7 +57,6 @@ describe('validate', function () {
 
   it('should validate a valid program without errors', function () {
     const errors = validate(JSON.parse(programJSON))
-    console.log(errors)
     assert.strictEqual(errors.length, 0)
   })
 })

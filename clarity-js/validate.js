@@ -95,7 +95,6 @@ function validateValue (value, paramRefs, context) {
 }
 
 function validateApplication (app, paramRefs, context) {
-  // TODO: validate application value and domain
   const requiredProps = ['definition', 'valueArgs', 'domainArgs']
   validateRequiredProps(app, requiredProps, context)
   const def = _.find(context.program.definitions, d => d.id === app.definition)
@@ -122,7 +121,6 @@ function validateValueArgs (domainArgs, valueArgs, definition, paramRefs, contex
   const requiredProps = ['param', 'value']
   valueArgs.forEach(arg => {
     validateRequiredProps(arg, requiredProps, context)
-    // TODO: validate param and value in same domain
     const valueDef = _.find(definition.valueParams, d => d.id === arg.param)
     if (valueDef === undefined) {
       context.errors.push('Referenced value param not defined')
@@ -142,12 +140,15 @@ function getAppliedDomain (definitionDomain, domainArgs) {
 function validateIfelse (ifelse, paramRefs, context) {
   const requiredProps = ['domain', 'condition', 'if', 'else']
   validateRequiredProps(ifelse, requiredProps, context)
-  // TODO: validate condition boolean domain
   validateDomain(ifelse.domain, paramRefs, context)
   validateValue(ifelse.condition, paramRefs, context)
-  // TODO: validate if and else same domain
   validateValue(ifelse.if, paramRefs, context)
   validateValue(ifelse.else, paramRefs, context)
+  if (getValueDomainName(ifelse.condition, context) !== 'bool') {
+    context.errors.push('If/else condition is not boolean')
+  }
+  valueDomainMatch(ifelse.if, ifelse.domain, context, true)
+  valueDomainMatch(ifelse.else, ifelse.domain, context, true)
 }
 
 function validateVariable (item, paramType, paramRefs, context) {

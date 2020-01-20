@@ -16,9 +16,10 @@
     "url": "https://github.com/tyleryasaka/clarity/issues"
   },
   "homepage": "https://github.com/tyleryasaka/clarity#readme",
-  "dependencies": {},
-  "devDependencies": {
-    "mocha": "^6.2.2",
+  "dependencies": {
     "underscore": "^1.9.2"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2"
   }
 }

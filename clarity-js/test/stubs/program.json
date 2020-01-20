@@ -5,6 +5,13 @@
       "id": "1",
       "name": "trivial abstract",
       "description": "",
+      "domainParams": [
+        {
+          "id": "1",
+          "name": "my domain",
+          "description": ""
+        }
+      ],
       "valueParams": [
         {
           "id": "2",
@@ -14,13 +21,6 @@
             "variable": true,
             "p": "1"
           }
-        }
-      ],
-      "domainParams": [
-        {
-          "id": "1",
-          "name": "my domain",
-          "description": ""
         }
       ],
       "domain": {
@@ -37,6 +37,7 @@
       "id": "2",
       "name": "hello world func",
       "description": "",
+      "domainParams": [],
       "valueParams": [
         {
           "id": "1",
@@ -48,7 +49,6 @@
           }
         }
       ],
-      "domainParams": [],
       "domain": {
         "variable": false,
         "v": "string"
@@ -57,6 +57,10 @@
         "variable": false,
         "v": {
           "type": "ifelse",
+          "domain": {
+            "variable": false,
+            "v": "string"
+          },
           "condition": {
             "variable": true,
             "p": "1"
@@ -83,8 +87,8 @@
       "id": "3",
       "name": "function call",
       "description": "",
-      "valueParams": [],
       "domainParams": [],
+      "valueParams": [],
       "domain": {
         "variable": false,
         "v": "string"
@@ -96,7 +100,7 @@
           "definition": "2",
           "valueArgs": [
             {
-              "p": "1",
+              "param": "1",
               "value": {
                 "variable": false,
                 "v": {
@@ -115,8 +119,8 @@
       "id": "4",
       "name": "function call",
       "description": "",
-      "valueParams": [],
       "domainParams": [],
+      "valueParams": [],
       "domain": {
         "variable": false,
         "v": "string"
@@ -128,7 +132,7 @@
           "definition": "2",
           "valueArgs": [
             {
-              "p": "1",
+              "param": "1",
               "value": {
                 "variable": false,
                 "v": {
@@ -139,6 +143,46 @@
             }
           ],
           "domainArgs": []
+        }
+      }
+    },
+    {
+      "type": "definition",
+      "id": "5",
+      "name": "trivial application",
+      "description": "",
+      "domainParams": [],
+      "valueParams": [],
+      "domain": {
+        "variable": false,
+        "v": "string"
+      },
+      "body": {
+        "variable": false,
+        "v": {
+          "type": "application",
+          "definition": "1",
+          "domainArgs": [
+            {
+              "param": "1",
+              "domain": {
+                "variable": false,
+                "v": "bool"
+              }
+            }
+          ],
+          "valueArgs": [
+            {
+              "param": "2",
+              "value": {
+                "variable": false,
+                "v": {
+                  "type": "bool-literal",
+                  "literalValue": false
+                }
+              }
+            }
+          ]
         }
       }
     }

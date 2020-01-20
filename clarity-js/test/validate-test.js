@@ -10,9 +10,9 @@ describe('validate', function () {
   it('should not allow duplicate definition ids', function () {
     const errors = validate({
       definitions: [
-        { id: '1', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } },
-        { id: '2', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } },
-        { id: '1', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } }
+        { id: '1', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: 'string' }, body: { variable: false, v: { type: 'string-literal' } } },
+        { id: '2', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: 'string' }, body: { variable: false, v: { type: 'string-literal' } } },
+        { id: '1', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: 'string' }, body: { variable: false, v: { type: 'string-literal' } } }
       ]
     })
     assert.strictEqual(errors.length, 1)
@@ -27,10 +27,10 @@ describe('validate', function () {
           type: 'definition',
           name: '',
           description: '',
-          domainParams: [ { id: '11', name: '', description: '' }, { id: '11', name: '', description: '' } ],
-          valueParams: [],
-          domain: { variable: true, p: '11' },
-          body: { variable: false, v: { type: 'string-literal' } }
+          domainParams: [],
+          valueParams: [ { id: '11', name: '', description: '', domain: { variable: false, v: 'string' } }, { id: '11', name: '', description: '', domain: { variable: false, v: 'string' } } ],
+          domain: { variable: false, v: 'string' },
+          body: { variable: true, p: '11' }
         }
       ]
     })

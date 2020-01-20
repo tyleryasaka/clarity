@@ -7,7 +7,8 @@ module.exports = function validate (program) {
     validateProgram(program, context)
     validateUnique(program.definitions, 'id', context)
     program.definitions.forEach(d => {
-      validateDefinition(d, context)
+      const definitionContext = { errors, program, definition: d }
+      validateDefinition(d, definitionContext)
     })
   } catch (e) {
     console.log(e)
@@ -51,10 +52,10 @@ function validateDefinition (d, context) {
   validateDomainParams(d.domainParams, context)
   validateValueParams(d.valueParams, paramRefs, context)
   validateDomain(d.domain, paramRefs, context)
-  // TODO: validate body matches domain
   validateValue(d.body, paramRefs, context)
   validateParamRefs(d.valueParams, 'value', paramRefs, context)
   validateParamRefs(d.domainParams, 'domain', paramRefs, context)
+  valueDomainMatch(d.body, d.domain, context, true)
 }
 
 function validateValueParams (params, paramRefs, context) {
@@ -170,17 +171,21 @@ function validateParamRefs (params, paramType, paramRefs, context) {
   }
 }
 
-function valueDomainMatch (value, domain, context) {
-  const valueDomainName = getValueDomainName(value, context)
-  const domainName = getDomainName(domain)
+function valueDomainMatch (value, domain, context, domainVariableExact = false) {
+  const valueDomainName = getValueDomainName(value, context, domainVariableExact)
+  const domainName = getDomainName(domain, domainVariableExact)
   if (valueDomainName !== domainName) {
     context.errors.push('Value-domain mismatch')
   }
 }
 
-function getValueDomainName (value, context) {
+function getValueDomainName (value, context, domainVariableExact) {
+  if (value.variable) {
+    const valueDef = _.find(context.definition.valueParams, d => d.id === value.p)
+    return getDomainName(valueDef.domain, domainVariableExact)
+  }
   if (value.v.type === 'application') {
-    const def = _.find(context.definitions, d => d.id === value.v.definition)
+    const def = _.find(context.program.definitions, d => d.id === value.v.definition)
     return getDomainName(getAppliedDomain(def.domain, value.v.domainArgs))
   }
   if (value.v.type === 'ifelse') {
@@ -197,6 +202,9 @@ function getValueDomainName (value, context) {
   }
 }
 
-function getDomainName (domain) {
-  return domain.variable ? 'variable' : domain.v
+function getDomainName (domain, domainVariableExact) {
+  if (domain.variable) {
+    return domainVariableExact ? `variable-${domain.p}` : 'variable'
+  }
+  return domain.v
 }

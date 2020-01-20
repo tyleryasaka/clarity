@@ -155,7 +155,7 @@
       "valueParams": [],
       "domain": {
         "variable": false,
-        "v": "string"
+        "v": "bool"
       },
       "body": {
         "variable": false,

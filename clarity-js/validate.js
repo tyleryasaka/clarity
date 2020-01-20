@@ -42,17 +42,31 @@ function validateProgram (program, context) {
 }
 
 function validateDefinition (d, context) {
-  const requiredProps = ['type', 'id', 'name', 'description', 'params', 'domain', 'body']
-  const paramRefs = []
+  const requiredProps = ['type', 'id', 'name', 'description', 'domainParams', 'valueParams', 'domain', 'body']
+  const paramRefs = {
+    value: [],
+    domain: []
+  }
   validateRequiredProps(d, requiredProps, context)
-  validateParams(d.params, context)
+  validateDomainParams(d.domainParams, context)
+  validateValueParams(d.valueParams, paramRefs, context)
   validateDomain(d.domain, paramRefs, context)
-  // TODO: validate value matches domain
+  // TODO: validate body matches domain
   validateValue(d.body, paramRefs, context)
-  validateParamRefs(d.params, paramRefs, context)
+  validateParamRefs(d.valueParams, 'value', paramRefs, context)
+  validateParamRefs(d.domainParams, 'domain', paramRefs, context)
 }
 
-function validateParams (params, context) {
+function validateValueParams (params, paramRefs, context) {
+  const requiredProps = ['id', 'name', 'description', 'domain']
+  params.forEach(param => {
+    validateRequiredProps(param, requiredProps, context)
+    validateDomain(param.domain, paramRefs, context)
+  })
+  validateUnique(params, 'id', context)
+}
+
+function validateDomainParams (params, context) {
   const requiredProps = ['id', 'name', 'description']
   params.forEach(param => {
     validateRequiredProps(param, requiredProps, context)
@@ -61,11 +75,11 @@ function validateParams (params, context) {
 }
 
 function validateDomain (domain, paramRefs, context) {
-  validateVariable(domain, paramRefs, context)
+  validateVariable(domain, 'domain', paramRefs, context)
 }
 
 function validateValue (value, paramRefs, context) {
-  validateVariable(value, paramRefs, context)
+  validateVariable(value, 'value', paramRefs, context)
   if (!value.variable) {
     const v = value.v
     validateRequiredProps(v, ['type'], context)
@@ -80,21 +94,35 @@ function validateValue (value, paramRefs, context) {
 }
 
 function validateApplication (app, paramRefs, context) {
-  const requiredProps = ['definition', 'args']
+  const requiredProps = ['definition', 'valueArgs', 'domainArgs']
   validateRequiredProps(app, requiredProps, context)
   const def = _.find(context.program.definitions, d => d.id === app.definition)
   if (def === undefined) {
     context.errors.push('Referenced definition not defined')
   }
-  validateArgs(app.args, def, paramRefs, context)
+  validateDomainArgs(app.domainArgs, def, paramRefs, context)
+  validateValueArgs(app.valueArgs, def, paramRefs, context)
 }
 
-function validateArgs (args, definition, paramRefs, context) {
+function validateDomainArgs (args, definition, paramRefs, context) {
+  const requiredProps = ['p', 'domain']
+  args.forEach(arg => {
+    validateRequiredProps(arg, requiredProps, context)
+    // TODO: validate p and value in same domain
+    const paramIds = definition.domainParams.map(d => d.id)
+    if (!_.includes(paramIds, arg.p)) {
+      context.errors.push('Referenced param not defined')
+    }
+    validateDomain(arg.domain, paramRefs, context)
+  })
+}
+
+function validateValueArgs (args, definition, paramRefs, context) {
   const requiredProps = ['p', 'value']
   args.forEach(arg => {
     validateRequiredProps(arg, requiredProps, context)
     // TODO: validate p and value in same domain
-    const paramIds = definition.params.map(d => d.id)
+    const paramIds = definition.valueParams.map(d => d.id)
     if (!_.includes(paramIds, arg.p)) {
       context.errors.push('Referenced param not defined')
     }
@@ -112,23 +140,23 @@ function validateIfelse (ifelse, paramRefs, context) {
   validateValue(ifelse.else, paramRefs, context)
 }
 
-function validateVariable (item, paramRefs, context) {
+function validateVariable (item, paramType, paramRefs, context) {
   const requiredProps = ['variable']
   validateRequiredProps(item, requiredProps, context)
   if (item.variable) {
     validateRequiredProps(item, ['p'], context)
-    paramRefs.push(item.p)
+    paramRefs[paramType].push(item.p)
   } else {
     validateRequiredProps(item, ['v'], context)
   }
 }
 
-function validateParamRefs (params, paramRefs, context) {
+function validateParamRefs (params, paramType, paramRefs, context) {
   const paramIds = params.map(param => param.id)
-  if (_.difference(paramRefs, paramIds).length !== 0) {
+  if (_.difference(paramRefs[paramType], paramIds).length !== 0) {
     context.errors.push('Referenced param(s) not defined')
   }
-  if (_.difference(paramIds, paramRefs).length !== 0) {
+  if (_.difference(paramIds, paramRefs[paramType]).length !== 0) {
     context.errors.push('Unused parameter definition')
   }
 }

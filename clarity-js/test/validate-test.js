@@ -10,9 +10,9 @@ describe('validate', function () {
   it('should not allow duplicate definition ids', function () {
     const errors = validate({
       definitions: [
-        { id: '1', type: 'definition', name: '', description: '', params: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } },
-        { id: '2', type: 'definition', name: '', description: '', params: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } },
-        { id: '1', type: 'definition', name: '', description: '', params: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } }
+        { id: '1', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } },
+        { id: '2', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } },
+        { id: '1', type: 'definition', name: '', description: '', valueParams: [], domainParams: [], domain: { variable: false, v: { type: 'string-literal' } }, body: { variable: false, v: { type: 'string-literal' } } }
       ]
     })
     assert.strictEqual(errors.length, 1)
@@ -27,7 +27,8 @@ describe('validate', function () {
           type: 'definition',
           name: '',
           description: '',
-          params: [ { id: '11', name: '', description: '' }, { id: '11', name: '', description: '' } ],
+          domainParams: [ { id: '11', name: '', description: '' }, { id: '11', name: '', description: '' } ],
+          valueParams: [],
           domain: { variable: true, p: '11' },
           body: { variable: false, v: { type: 'string-literal' } }
         }
@@ -45,7 +46,8 @@ describe('validate', function () {
           type: 'definition',
           name: '',
           description: '',
-          params: [ { id: '1', name: '', description: '' } ],
+          domainParams: [],
+          valueParams: [ { id: '1', name: '', description: '', domain: { variable: true, p: '2' } } ],
           domain: { variable: true, p: '2' },
           body: { variable: true, p: '1' }
         }

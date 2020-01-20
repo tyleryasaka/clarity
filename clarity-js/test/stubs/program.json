@@ -1,6 +1,7 @@
 {
-  "entities": [
+  "definitions": [
     {
+      "type": "definition",
       "id": "1",
       "name": "trivial abstract",
       "description": "",
@@ -17,15 +18,16 @@
         }
       ],
       "domain": {
-        "t": "d",
+        "variable": true,
         "p": "1"
       },
-      "value": {
-        "t": "d",
+      "body": {
+        "variable": true,
         "p": "2"
       }
     },
     {
+      "type": "definition",
       "id": "2",
       "name": "hello world func",
       "description": "",
@@ -37,52 +39,58 @@
         }
       ],
       "domain": {
-        "t": "s",
+        "variable": false,
         "v": "string"
       },
-      "value": {
-        "t": "s",
+      "body": {
+        "variable": false,
         "v": {
           "type": "ifelse",
           "condition": {
-            "t": "d",
+            "variable": true,
             "p": "1"
           },
           "if": {
-            "t": "s",
+            "variable": false,
             "v": {
-              "type": "literal-string",
-              "string": "hello"
+              "type": "string-literal",
+              "literalValue": "hello"
             }
           },
           "else": {
-            "t": "s",
+            "variable": false,
             "v": {
-              "type": "literal-string",
-              "string": "world"
+              "type": "string-literal",
+              "literalValue": "world"
             }
           }
         }
       }
     },
     {
+      "type": "definition",
       "id": "3",
+      "name": "function call",
+      "description": "",
       "params": [],
       "domain": {
-        "t": "s",
+        "variable": false,
         "v": "string"
       },
-      "value": {
-        "t": "s",
+      "body": {
+        "variable": false,
         "v": {
-          "type": "reference",
-          "entityId": "2",
+          "type": "application",
+          "definition": "2",
           "args": [
             {
               "p": "1",
-              "v": {
-                "type": "literal-bool",
-                "bool": "T"
+              "value": {
+                "variable": false,
+                "v": {
+                  "type": "bool-literal",
+                  "literalValue": true
+                }
               }
             }
           ]
@@ -90,23 +98,29 @@
       }
     },
     {
+      "type": "definition",
       "id": "4",
+      "name": "function call",
+      "description": "",
       "params": [],
       "domain": {
-        "t": "s",
+        "variable": false,
         "v": "string"
       },
-      "value": {
-        "t": "s",
+      "body": {
+        "variable": false,
         "v": {
-          "type": "reference",
-          "entityId": "2",
+          "type": "application",
+          "definition": "2",
           "args": [
             {
               "p": "1",
-              "v": {
-                "type": "literal-bool",
-                "bool": "F"
+              "value": {
+                "variable": false,
+                "v": {
+                  "type": "bool-literal",
+                  "literalValue": false
+                }
               }
             }
           ]

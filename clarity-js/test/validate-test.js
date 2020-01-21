@@ -4,7 +4,7 @@ const fs = require('fs')
 const assert = require('assert')
 
 const programJSON = fs.readFileSync('./test/stubs/program.json', 'utf8')
-const validate = require('../validate')
+const { validate } = require('../validate')
 
 describe('validate', function () {
   it('should not allow duplicate definition ids', function () {

@@ -1,6 +1,6 @@
 const _ = require('underscore')
 
-module.exports = function validate (program) {
+function validate (program) {
   const errors = []
   try {
     const context = { errors, program }
@@ -16,7 +16,7 @@ module.exports = function validate (program) {
   return errors
 }
 
-function validateRequiredProps (obj, props, context) {
+function requiredProps (obj, props, context) {
   props.forEach(p => {
     if (_.property(p)(obj) === undefined) {
       context.errors.push(`Missing property: ${p}`)
@@ -38,17 +38,16 @@ function validateUnique (items, key, context) {
 }
 
 function validateProgram (program, context) {
-  const requiredProps = ['definitions']
-  validateRequiredProps(program, requiredProps, context)
+  requiredProps(program, ['definitions'], context)
 }
 
 function validateDefinition (d, context) {
-  const requiredProps = ['type', 'id', 'name', 'description', 'domainParams', 'valueParams', 'domain', 'body']
+  const props = ['type', 'id', 'name', 'description', 'domainParams', 'valueParams', 'domain', 'body']
   const paramRefs = {
     value: [],
     domain: []
   }
-  validateRequiredProps(d, requiredProps, context)
+  requiredProps(d, props, context)
   validateDomainParams(d.domainParams, context)
   validateValueParams(d.valueParams, paramRefs, context)
   validateDomain(d.domain, paramRefs, context)
@@ -59,18 +58,18 @@ function validateDefinition (d, context) {
 }
 
 function validateValueParams (params, paramRefs, context) {
-  const requiredProps = ['id', 'name', 'description', 'domain']
+  const props = ['id', 'name', 'description', 'domain']
   params.forEach(param => {
-    validateRequiredProps(param, requiredProps, context)
+    requiredProps(param, props, context)
     validateDomain(param.domain, paramRefs, context)
   })
   validateUnique(params, 'id', context)
 }
 
 function validateDomainParams (params, context) {
-  const requiredProps = ['id', 'name', 'description']
+  const props = ['id', 'name', 'description']
   params.forEach(param => {
-    validateRequiredProps(param, requiredProps, context)
+    requiredProps(param, props, context)
   })
   validateUnique(params, 'id', context)
 }
@@ -83,7 +82,7 @@ function validateValue (value, paramRefs, context) {
   validateVariable(value, 'value', paramRefs, context)
   if (!value.variable) {
     const v = value.v
-    validateRequiredProps(v, ['type'], context)
+    requiredProps(v, ['type'], context)
     oneOf(v.type, ['application', 'ifelse', 'integer-literal', 'string-literal', 'bool-literal', 'complex-literal', 'definition-literal'], context)
     if (v.type === 'application') {
       validateApplication(v, paramRefs, context)
@@ -95,8 +94,8 @@ function validateValue (value, paramRefs, context) {
 }
 
 function validateApplication (app, paramRefs, context) {
-  const requiredProps = ['definition', 'valueArgs', 'domainArgs']
-  validateRequiredProps(app, requiredProps, context)
+  const props = ['definition', 'valueArgs', 'domainArgs']
+  requiredProps(app, props, context)
   const def = _.find(context.program.definitions, d => d.id === app.definition)
   if (def === undefined) {
     context.errors.push('Referenced definition not defined')
@@ -106,9 +105,9 @@ function validateApplication (app, paramRefs, context) {
 }
 
 function validateDomainArgs (args, definition, paramRefs, context) {
-  const requiredProps = ['param', 'domain']
+  const props = ['param', 'domain']
   args.forEach(arg => {
-    validateRequiredProps(arg, requiredProps, context)
+    requiredProps(arg, props, context)
     const domainDef = _.find(definition.domainParams, d => d.id === arg.param)
     if (domainDef === undefined) {
       context.errors.push('Referenced domain param not defined')
@@ -118,9 +117,9 @@ function validateDomainArgs (args, definition, paramRefs, context) {
 }
 
 function validateValueArgs (domainArgs, valueArgs, definition, paramRefs, context) {
-  const requiredProps = ['param', 'value']
+  const props = ['param', 'value']
   valueArgs.forEach(arg => {
-    validateRequiredProps(arg, requiredProps, context)
+    requiredProps(arg, props, context)
     const valueDef = _.find(definition.valueParams, d => d.id === arg.param)
     if (valueDef === undefined) {
       context.errors.push('Referenced value param not defined')
@@ -138,8 +137,8 @@ function getAppliedDomain (definitionDomain, domainArgs) {
 }
 
 function validateIfelse (ifelse, paramRefs, context) {
-  const requiredProps = ['domain', 'condition', 'if', 'else']
-  validateRequiredProps(ifelse, requiredProps, context)
+  const props = ['domain', 'condition', 'if', 'else']
+  requiredProps(ifelse, props, context)
   validateDomain(ifelse.domain, paramRefs, context)
   validateValue(ifelse.condition, paramRefs, context)
   validateValue(ifelse.if, paramRefs, context)
@@ -152,13 +151,12 @@ function validateIfelse (ifelse, paramRefs, context) {
 }
 
 function validateVariable (item, paramType, paramRefs, context) {
-  const requiredProps = ['variable']
-  validateRequiredProps(item, requiredProps, context)
+  requiredProps(item, ['variable'], context)
   if (item.variable) {
-    validateRequiredProps(item, ['p'], context)
+    requiredProps(item, ['p'], context)
     paramRefs[paramType].push(item.p)
   } else {
-    validateRequiredProps(item, ['v'], context)
+    requiredProps(item, ['v'], context)
   }
 }
 
@@ -208,4 +206,10 @@ function getDomainName (domain, domainVariableExact) {
     return domainVariableExact ? `variable-${domain.p}` : 'variable'
   }
   return domain.v
+}
+
+module.exports = {
+  validate,
+  requiredProps,
+  oneOf
 }

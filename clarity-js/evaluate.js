@@ -3,12 +3,12 @@ const { validate, requiredProps, oneOf } = require('./validate')
 
 function evaluate (program, defId, valueArgs = [], alreadyValidated = false) {
   const programErrors = alreadyValidated ? validate(program) : []
-  if (programErrors) {
-    return { programErrors }
+  if (programErrors.length) {
+    return { errors: programErrors }
   }
   const argErrors = validateArgs(valueArgs)
-  if (argErrors) {
-    return { argErrors }
+  if (argErrors.length) {
+    return { errors: argErrors }
   }
   const def = _.find(program.definitions, d => d.id === defId)
   if (isDynamic(def, valueArgs)) {
@@ -27,6 +27,7 @@ function validateArgs (valueArgs) {
     requiredProps(a.value.v, ['type', 'literalValue'], context)
     oneOf(a.value.v.type, ['integer-literal', 'string-literal', 'bool-literal'], context)
   })
+  return context.errors
 }
 
 function isDynamic (def, valueArgs) {
@@ -75,9 +76,9 @@ function evaluateApplication (app, context) {
 function evaluateIfelse (ifelse, context) {
   const condition = evaluateValue(ifelse.condition, context)
   if (condition.v.literalValue) {
-    return evaluateValue(condition.if, context)
+    return evaluateValue(ifelse.if, context)
   } else {
-    return evaluateValue(condition.else, context)
+    return evaluateValue(ifelse.else, context)
   }
 }
 

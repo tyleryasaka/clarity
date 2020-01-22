@@ -45,13 +45,17 @@
           "description": "",
           "domain": {
             "variable": false,
-            "v": "bool"
+            "v": {
+              "domainType": "bool"
+            }
           }
         }
       ],
       "domain": {
         "variable": false,
-        "v": "string"
+        "v": {
+          "domainType": "string"
+        }
       },
       "body": {
         "variable": false,
@@ -59,7 +63,9 @@
           "type": "ifelse",
           "domain": {
             "variable": false,
-            "v": "string"
+            "v": {
+              "domainType": "string"
+            }
           },
           "condition": {
             "variable": true,
@@ -91,7 +97,9 @@
       "valueParams": [],
       "domain": {
         "variable": false,
-        "v": "string"
+        "v": {
+          "domainType": "string"
+        }
       },
       "body": {
         "variable": false,
@@ -123,7 +131,9 @@
       "valueParams": [],
       "domain": {
         "variable": false,
-        "v": "string"
+        "v": {
+          "domainType": "string"
+        }
       },
       "body": {
         "variable": false,
@@ -155,7 +165,9 @@
       "valueParams": [],
       "domain": {
         "variable": false,
-        "v": "bool"
+        "v": {
+          "domainType": "bool"
+        }
       },
       "body": {
         "variable": false,
@@ -167,7 +179,9 @@
               "param": "1",
               "domain": {
                 "variable": false,
-                "v": "bool"
+                "v": {
+                  "domainType": "bool"
+                }
               }
             }
           ],

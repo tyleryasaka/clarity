@@ -2,17 +2,13 @@ const _ = require('underscore')
 
 function validate (program) {
   const errors = []
-  try {
-    const context = { errors, program }
-    validateProgram(program, context)
-    validateUnique(program.definitions, 'id', context)
-    program.definitions.forEach(d => {
-      const definitionContext = { errors, program, definition: d }
-      validateDefinition(d, definitionContext)
-    })
-  } catch (e) {
-    console.log(e)
-  }
+  const context = { errors, program }
+  validateProgram(program, context)
+  validateUnique(program.definitions, 'id', context)
+  program.definitions.forEach(d => {
+    const definitionContext = { errors, program, definition: d }
+    validateDefinition(d, definitionContext)
+  })
   return errors
 }
 
@@ -75,12 +71,15 @@ function validateDomainParams (params, context) {
 }
 
 function validateDomain (domain, paramRefs, context) {
-  validateVariable(domain, 'domain', paramRefs, context)
+  const isVariable = validateVariable(domain, 'domain', paramRefs, context)
+  if (!isVariable) {
+    requiredProps(domain.v, ['domainType'], context)
+  }
 }
 
 function validateValue (value, paramRefs, context) {
-  validateVariable(value, 'value', paramRefs, context)
-  if (!value.variable) {
+  const isVariable = validateVariable(value, 'value', paramRefs, context)
+  if (!isVariable) {
     const v = value.v
     requiredProps(v, ['type'], context)
     oneOf(v.type, ['application', 'ifelse', 'integer-literal', 'string-literal', 'bool-literal', 'complex-literal', 'definition-literal'], context)
@@ -143,7 +142,7 @@ function validateIfelse (ifelse, paramRefs, context) {
   validateValue(ifelse.condition, paramRefs, context)
   validateValue(ifelse.if, paramRefs, context)
   validateValue(ifelse.else, paramRefs, context)
-  if (getValueDomainName(ifelse.condition, context) !== 'bool') {
+  if (getActualDomain(ifelse.condition, context).domainType !== 'bool') {
     context.errors.push('If/else condition is not boolean')
   }
   valueDomainMatch(ifelse.if, ifelse.domain, context, true)
@@ -155,8 +154,10 @@ function validateVariable (item, paramType, paramRefs, context) {
   if (item.variable) {
     requiredProps(item, ['p'], context)
     paramRefs[paramType].push(item.p)
+    return true
   } else {
     requiredProps(item, ['v'], context)
+    return false
   }
 }
 
@@ -171,39 +172,40 @@ function validateParamRefs (params, paramType, paramRefs, context) {
 }
 
 function valueDomainMatch (value, domain, context, domainVariableExact = false) {
-  const valueDomainName = getValueDomainName(value, context, domainVariableExact)
-  const domainName = getDomainName(domain, domainVariableExact)
-  if (valueDomainName !== domainName) {
+  const actualDomain = getActualDomain(value, context, domainVariableExact)
+  const expectedDomain = getExpectedDomain(domain, domainVariableExact)
+  if (actualDomain.domainType !== expectedDomain.domainType) {
     context.errors.push('Value-domain mismatch')
   }
 }
 
-function getValueDomainName (value, context, domainVariableExact) {
+function getActualDomain (value, context, domainVariableExact) {
   if (value.variable) {
     const valueDef = _.find(context.definition.valueParams, d => d.id === value.p)
-    return getDomainName(valueDef.domain, domainVariableExact)
+    return getExpectedDomain(valueDef.domain, domainVariableExact)
   }
   if (value.v.type === 'application') {
     const def = _.find(context.program.definitions, d => d.id === value.v.definition)
-    return getDomainName(getAppliedDomain(def.domain, value.v.domainArgs))
+    return getExpectedDomain(getAppliedDomain(def.domain, value.v.domainArgs))
   }
   if (value.v.type === 'ifelse') {
-    return getDomainName(value.v.domain)
+    return getExpectedDomain(value.v.domain)
   }
   if (value.v.type === 'integer-literal') {
-    return 'integer'
+    return { domainType: 'integer' }
   }
   if (value.v.type === 'string-literal') {
-    return 'string'
+    return { domainType: 'string' }
   }
   if (value.v.type === 'bool-literal') {
-    return 'bool'
+    return { domainType: 'bool' }
   }
 }
 
-function getDomainName (domain, domainVariableExact) {
+function getExpectedDomain (domain, domainVariableExact) {
   if (domain.variable) {
-    return domainVariableExact ? `variable-${domain.p}` : 'variable'
+    const domainType = domainVariableExact ? `variable-${domain.p}` : 'variable'
+    return { domainType }
   }
   return domain.v
 }

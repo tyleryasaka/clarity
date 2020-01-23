@@ -7,29 +7,27 @@
       "description": "",
       "domainParams": [
         {
-          "id": "1",
           "name": "my domain",
           "description": ""
         }
       ],
       "valueParams": [
         {
-          "id": "2",
           "name": "my value",
           "description": "",
           "domain": {
             "variable": true,
-            "p": "1"
+            "p": 0
           }
         }
       ],
       "domain": {
         "variable": true,
-        "p": "1"
+        "p": 0
       },
       "body": {
         "variable": true,
-        "p": "2"
+        "p": 0
       }
     },
     {
@@ -40,7 +38,6 @@
       "domainParams": [],
       "valueParams": [
         {
-          "id": "1",
           "name": "my bool",
           "description": "",
           "domain": {
@@ -69,7 +66,7 @@
           },
           "condition": {
             "variable": true,
-            "p": "1"
+            "p": 0
           },
           "if": {
             "variable": false,
@@ -91,10 +88,21 @@
     {
       "type": "definition",
       "id": "3",
-      "name": "function call",
+      "name": "world hello func",
       "description": "",
       "domainParams": [],
-      "valueParams": [],
+      "valueParams": [
+        {
+          "name": "my bool",
+          "description": "",
+          "domain": {
+            "variable": false,
+            "v": {
+              "domainType": "bool"
+            }
+          }
+        }
+      ],
       "domain": {
         "variable": false,
         "v": {
@@ -104,21 +112,31 @@
       "body": {
         "variable": false,
         "v": {
-          "type": "application",
-          "definition": "2",
-          "valueArgs": [
-            {
-              "param": "1",
-              "value": {
-                "variable": false,
-                "v": {
-                  "type": "bool-literal",
-                  "literalValue": true
-                }
-              }
+          "type": "ifelse",
+          "domain": {
+            "variable": false,
+            "v": {
+              "domainType": "string"
             }
-          ],
-          "domainArgs": []
+          },
+          "condition": {
+            "variable": true,
+            "p": 0
+          },
+          "if": {
+            "variable": false,
+            "v": {
+              "type": "string-literal",
+              "literalValue": "world"
+            }
+          },
+          "else": {
+            "variable": false,
+            "v": {
+              "type": "string-literal",
+              "literalValue": "hello"
+            }
+          }
         }
       }
     },
@@ -139,16 +157,16 @@
         "variable": false,
         "v": {
           "type": "application",
-          "definition": "2",
+          "definition": {
+            "variable": false,
+            "v": "2"
+          },
           "valueArgs": [
             {
-              "param": "1",
-              "value": {
-                "variable": false,
-                "v": {
-                  "type": "bool-literal",
-                  "literalValue": false
-                }
+              "variable": false,
+              "v": {
+                "type": "bool-literal",
+                "literalValue": true
               }
             }
           ],
@@ -159,6 +177,40 @@
     {
       "type": "definition",
       "id": "5",
+      "name": "function call",
+      "description": "",
+      "domainParams": [],
+      "valueParams": [],
+      "domain": {
+        "variable": false,
+        "v": {
+          "domainType": "string"
+        }
+      },
+      "body": {
+        "variable": false,
+        "v": {
+          "type": "application",
+          "definition": {
+            "variable": false,
+            "v": "2"
+          },
+          "valueArgs": [
+            {
+              "variable": false,
+              "v": {
+                "type": "bool-literal",
+                "literalValue": false
+              }
+            }
+          ],
+          "domainArgs": []
+        }
+      }
+    },
+    {
+      "type": "definition",
+      "id": "6",
       "name": "trivial application",
       "description": "",
       "domainParams": [],
@@ -173,27 +225,78 @@
         "variable": false,
         "v": {
           "type": "application",
-          "definition": "1",
+          "definition": {
+            "variable": false,
+            "v": "1"
+          },
           "domainArgs": [
             {
-              "param": "1",
-              "domain": {
-                "variable": false,
-                "v": {
-                  "domainType": "bool"
-                }
+              "variable": false,
+              "v": {
+                "domainType": "bool"
               }
             }
           ],
           "valueArgs": [
             {
-              "param": "2",
-              "value": {
-                "variable": false,
-                "v": {
-                  "type": "bool-literal",
-                  "literalValue": false
-                }
+              "variable": false,
+              "v": {
+                "type": "bool-literal",
+                "literalValue": false
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "definition",
+      "id": "7",
+      "name": "meta function",
+      "description": "",
+      "domainParams": [],
+      "valueParams": [
+        {
+          "name": "inner function",
+          "description": "",
+          "domain": {
+            "variable": false,
+            "v": {
+              "domainType": "definition",
+              "signature": {
+                "domain": "string",
+                "domainParamsCount": 0,
+                "valueParamDomains": [
+                  {
+                    "domainType": "bool"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "domain": {
+        "variable": false,
+        "v": {
+          "domainType": "string"
+        }
+      },
+      "body": {
+        "variable": false,
+        "v": {
+          "type": "application",
+          "definition": {
+            "variable": true,
+            "p": 0
+          },
+          "domainArgs": [],
+          "valueArgs": [
+            {
+              "variable": false,
+              "v": {
+                "type": "bool-literal",
+                "literalValue": true
               }
             }
           ]

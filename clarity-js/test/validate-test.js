@@ -19,25 +19,6 @@ describe('validate', function () {
     assert.strictEqual(errors[0], 'Duplicate ids')
   })
 
-  it('should not allow duplicate param ids', function () {
-    const errors = validate({
-      definitions: [
-        {
-          id: '1',
-          type: 'definition',
-          name: '',
-          description: '',
-          domainParams: [],
-          valueParams: [ { id: '11', name: '', description: '', domain: { variable: false, v: { domainType: 'string' } } }, { id: '11', name: '', description: '', domain: { variable: false, v: { domainType: 'string' } } } ],
-          domain: { variable: false, v: { domainType: 'string' } },
-          body: { variable: true, p: '11' }
-        }
-      ]
-    })
-    assert.strictEqual(errors.length, 1)
-    assert.strictEqual(errors[0], 'Duplicate ids')
-  })
-
   it('should not allow reference of missing params', function () {
     const errors = validate({
       definitions: [
@@ -47,9 +28,9 @@ describe('validate', function () {
           name: '',
           description: '',
           domainParams: [],
-          valueParams: [ { id: '1', name: '', description: '', domain: { variable: true, p: '2' } } ],
-          domain: { variable: true, p: '2' },
-          body: { variable: true, p: '1' }
+          valueParams: [],
+          domain: { variable: false, v: { domainType: 'string' } },
+          body: { variable: true, p: 1 }
         }
       ]
     })

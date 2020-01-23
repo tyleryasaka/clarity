@@ -3,8 +3,12 @@ const _ = require('underscore')
 function validate (program) {
   const errors = []
   const context = { errors, program }
-  validateProgram(program, context)
-  validateUnique(program.definitions, 'id', context)
+  if (!validateProgram(program, context)) {
+    return errors
+  }
+  if (!isUnique(program.definitions, 'id', context)) {
+    return errors
+  }
   program.definitions.forEach(d => {
     const definitionContext = { errors, program, definition: d }
     validateDefinition(d, definitionContext)
@@ -12,29 +16,39 @@ function validate (program) {
   return errors
 }
 
+function isValid (errors) {
+  return errors.length === 0
+}
+
 function requiredProps (obj, props, context) {
   props.forEach(p => {
     if (_.property(p)(obj) === undefined) {
       context.errors.push(`Missing property: ${p}`)
+      return false
     }
   })
+  return isValid(context.errors)
 }
 
 function oneOf (val, options, context) {
   if (!_.includes(options, val)) {
     context.errors.push(`${val} not allowed as a value`)
+    return false
   }
+  return isValid(context.errors)
 }
 
-function validateUnique (items, key, context) {
+function isUnique (items, key, context) {
   const ids = items.map(i => i[key])
   if (_.uniq(ids).length !== items.length) {
     context.errors.push(`Duplicate ids`)
+    return false
   }
+  return isValid(context.errors)
 }
 
 function validateProgram (program, context) {
-  requiredProps(program, ['definitions'], context)
+  return requiredProps(program, ['definitions'], context)
 }
 
 function validateDefinition (d, context) {
@@ -43,46 +57,71 @@ function validateDefinition (d, context) {
     value: [],
     domain: []
   }
-  requiredProps(d, props, context)
-  validateDomainParams(d.domainParams, context)
-  validateValueParams(d.valueParams, paramRefs, context)
-  validateDomain(d.domain, paramRefs, context)
-  validateValue(d.body, paramRefs, context)
-  validateParamRefs(d.valueParams, 'value', paramRefs, context)
-  validateParamRefs(d.domainParams, 'domain', paramRefs, context)
-  valueDomainMatch(d.body, d.domain, context, true)
+  if (!requiredProps(d, props, context)) {
+    return false
+  }
+  if (!validateDomainParams(d.domainParams, context)) {
+    return false
+  }
+  if (!validateValueParams(d.valueParams, paramRefs, context)) {
+    return false
+  }
+  if (!validateDomain(d.domain, paramRefs, context)) {
+    return false
+  }
+  if (!validateValue(d.body, paramRefs, context)) {
+    return false
+  }
+  if (!validateParamRefs(d.valueParams, 'value', paramRefs, context)) {
+    return false
+  }
+  if (!validateParamRefs(d.domainParams, 'domain', paramRefs, context)) {
+    return false
+  }
+  return valueDomainMatch(d.body, d.domain, context, true)
 }
 
 function validateValueParams (params, paramRefs, context) {
-  const props = ['id', 'name', 'description', 'domain']
+  const props = ['name', 'description', 'domain']
   params.forEach(param => {
-    requiredProps(param, props, context)
+    if (!requiredProps(param, props, context)) {
+      return
+    }
     validateDomain(param.domain, paramRefs, context)
   })
-  validateUnique(params, 'id', context)
+  return isValid(context.errors)
 }
 
 function validateDomainParams (params, context) {
-  const props = ['id', 'name', 'description']
+  const props = ['name', 'description']
   params.forEach(param => {
     requiredProps(param, props, context)
   })
-  validateUnique(params, 'id', context)
+  return isValid(context.errors)
 }
 
 function validateDomain (domain, paramRefs, context) {
-  const isVariable = validateVariable(domain, 'domain', paramRefs, context)
-  if (!isVariable) {
+  if (!validateVariable(domain, 'domain', paramRefs, context)) {
+    return false
+  }
+  if (!domain.variable) {
     requiredProps(domain.v, ['domainType'], context)
   }
+  return isValid(context.errors)
 }
 
 function validateValue (value, paramRefs, context) {
-  const isVariable = validateVariable(value, 'value', paramRefs, context)
-  if (!isVariable) {
+  if (!validateVariable(value, 'value', paramRefs, context)) {
+    return false
+  }
+  if (!value.variable) {
     const v = value.v
-    requiredProps(v, ['type'], context)
-    oneOf(v.type, ['application', 'ifelse', 'integer-literal', 'string-literal', 'bool-literal', 'complex-literal', 'definition-literal'], context)
+    if (!requiredProps(v, ['type'], context)) {
+      return false
+    }
+    if (!oneOf(v.type, ['application', 'ifelse', 'integer-literal', 'string-literal', 'bool-literal', 'complex-literal', 'definition-literal'], context)) {
+      return false
+    }
     if (v.type === 'application') {
       validateApplication(v, paramRefs, context)
     }
@@ -90,54 +129,68 @@ function validateValue (value, paramRefs, context) {
       validateIfelse(v, paramRefs, context)
     }
   }
+  return isValid(context.errors)
 }
 
 function validateApplication (app, paramRefs, context) {
   const props = ['definition', 'valueArgs', 'domainArgs']
-  requiredProps(app, props, context)
-  const def = _.find(context.program.definitions, d => d.id === app.definition)
-  if (def === undefined) {
-    context.errors.push('Referenced definition not defined')
+  if (!requiredProps(app, props, context)) {
+    return false
   }
-  validateDomainArgs(app.domainArgs, def, paramRefs, context)
-  validateValueArgs(app.domainArgs, app.valueArgs, def, paramRefs, context)
+  if (!validateVariable(app.definition, 'value', paramRefs, context)) {
+    return false
+  }
+  if (!app.definition.variable) {
+    const def = _.find(context.program.definitions, d => d.id === app.definition.v)
+    if (def === undefined) {
+      context.errors.push('Referenced definition not defined')
+      return false
+    }
+    validateDomainArgs(app.domainArgs, def, paramRefs, context)
+    validateValueArgs(app.domainArgs, app.valueArgs, def, paramRefs, context)
+  } else {
+    // substitute variable
+    // const variableDef = context.definition.valueParams[app.definition.p]
+  }
+  // TODO: validate args match type signature of variable definition
+  return isValid(context.errors)
 }
 
 function validateDomainArgs (args, definition, paramRefs, context) {
-  const props = ['param', 'domain']
-  args.forEach(arg => {
-    requiredProps(arg, props, context)
-    const domainDef = _.find(definition.domainParams, d => d.id === arg.param)
+  args.forEach((arg, a) => {
+    const domainDef = definition.domainParams[a]
     if (domainDef === undefined) {
       context.errors.push('Referenced domain param not defined')
     }
-    validateDomain(arg.domain, paramRefs, context)
+    validateDomain(arg, paramRefs, context)
   })
+  return isValid(context.errors)
 }
 
 function validateValueArgs (domainArgs, valueArgs, definition, paramRefs, context) {
-  const props = ['param', 'value']
-  valueArgs.forEach(arg => {
-    requiredProps(arg, props, context)
-    const valueDef = _.find(definition.valueParams, d => d.id === arg.param)
+  valueArgs.forEach((arg, a) => {
+    const valueDef = definition.valueParams[a]
     if (valueDef === undefined) {
       context.errors.push('Referenced value param not defined')
     }
-    validateValue(arg.value, paramRefs, context)
+    validateValue(arg, paramRefs, context)
     // If this application specified a domain, make sure to use the applied domain
     const appliedDomain = getAppliedDomain(valueDef.domain, domainArgs)
-    valueDomainMatch(arg.value, appliedDomain, context)
+    valueDomainMatch(arg, appliedDomain, context)
   })
+  return isValid(context.errors)
 }
 
 function getAppliedDomain (definitionDomain, domainArgs) {
-  const appliedDomain = definitionDomain.variable && _.find(domainArgs, domainArg => domainArg.param === definitionDomain.p)
-  return (appliedDomain && appliedDomain.domain) || definitionDomain
+  const appliedDomain = definitionDomain.variable && domainArgs[definitionDomain.p]
+  return appliedDomain || definitionDomain
 }
 
 function validateIfelse (ifelse, paramRefs, context) {
   const props = ['domain', 'condition', 'if', 'else']
-  requiredProps(ifelse, props, context)
+  if (!requiredProps(ifelse, props, context)) {
+    return false
+  }
   validateDomain(ifelse.domain, paramRefs, context)
   validateValue(ifelse.condition, paramRefs, context)
   validateValue(ifelse.if, paramRefs, context)
@@ -147,6 +200,7 @@ function validateIfelse (ifelse, paramRefs, context) {
   }
   valueDomainMatch(ifelse.if, ifelse.domain, context, true)
   valueDomainMatch(ifelse.else, ifelse.domain, context, true)
+  return isValid(context.errors)
 }
 
 function validateVariable (item, paramType, paramRefs, context) {
@@ -154,39 +208,77 @@ function validateVariable (item, paramType, paramRefs, context) {
   if (item.variable) {
     requiredProps(item, ['p'], context)
     paramRefs[paramType].push(item.p)
-    return true
   } else {
     requiredProps(item, ['v'], context)
-    return false
   }
+  return isValid(context.errors)
 }
 
 function validateParamRefs (params, paramType, paramRefs, context) {
-  const paramIds = params.map(param => param.id)
+  const paramIds = params.map((param, p) => p)
   if (_.difference(paramRefs[paramType], paramIds).length !== 0) {
     context.errors.push('Referenced param(s) not defined')
   }
   if (_.difference(paramIds, paramRefs[paramType]).length !== 0) {
     context.errors.push('Unused parameter definition')
   }
+  return isValid(context.errors)
 }
 
 function valueDomainMatch (value, domain, context, domainVariableExact = false) {
   const actualDomain = getActualDomain(value, context, domainVariableExact)
   const expectedDomain = getExpectedDomain(domain, domainVariableExact)
-  if (actualDomain.domainType !== expectedDomain.domainType) {
+  return domainsAreEqual(actualDomain, expectedDomain, context)
+}
+
+function domainsAreEqual (domainA, domainB, context) {
+  if (domainA.domainType !== domainB.domainType) {
     context.errors.push('Value-domain mismatch')
+    return false
   }
+  if (domainA.domainType === 'definition') {
+    domainsAreEqual(domainA.signature.domain, domainB.signature.domain, context)
+    if (domainA.signature.domainParamsCount !== domainB.signature.domainParamsCount) {
+      context.errors.push('Value-domain mismatch: domain param count')
+      return false
+    }
+    if (domainA.signature.valueParamDomains.length !== domainB.signature.valueParamDomains.length) {
+      context.errors.push('Value-domain mismatch: value param count')
+      return false
+    }
+    domainA.signature.valueParamDomains.forEach((item, i) => {
+      domainsAreEqual(domainA.signature.valueParamDomains[i], domainB.signature.valueParamDomains[i], context)
+    })
+  }
+  return isValid(context.errors)
 }
 
 function getActualDomain (value, context, domainVariableExact) {
   if (value.variable) {
-    const valueDef = _.find(context.definition.valueParams, d => d.id === value.p)
+    // substitute variable
+    const valueDef = context.definition.valueParams[value.p]
+    if (!valueDef) {
+      context.errors.push('')
+    }
     return getExpectedDomain(valueDef.domain, domainVariableExact)
   }
+  if (value.v.type === 'definition') {
+    const def = value.v
+    return {
+      domainType: 'definition',
+      signature: {
+        domain: getExpectedDomain(def.domain),
+        domainParamsCount: def.domainParams.length,
+        valueParamDomains: def.valueParams.map(p => getExpectedDomain(p.domain))
+      }
+    }
+  }
   if (value.v.type === 'application') {
-    const def = _.find(context.program.definitions, d => d.id === value.v.definition)
-    return getExpectedDomain(getAppliedDomain(def.domain, value.v.domainArgs))
+    const def = value.v.definition.variable
+      ? context.definition.valueParams[value.v.definition.p] // substitute variable
+      : _.find(context.program.definitions, d => d.id === value.v.definition.v)
+    const appliedDomain = getAppliedDomain(def.domain, value.v.domainArgs)
+    return getExpectedDomain(appliedDomain)
   }
   if (value.v.type === 'ifelse') {
     return getExpectedDomain(value.v.domain)

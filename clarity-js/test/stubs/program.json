@@ -1,7 +1,7 @@
 {
-  "definitions": [
+  "functions": [
     {
-      "type": "definition",
+      "type": "function",
       "id": "1",
       "name": "trivial abstract",
       "description": "",
@@ -31,7 +31,7 @@
       }
     },
     {
-      "type": "definition",
+      "type": "function",
       "id": "2",
       "name": "hello world func",
       "description": "",
@@ -86,7 +86,7 @@
       }
     },
     {
-      "type": "definition",
+      "type": "function",
       "id": "3",
       "name": "world hello func",
       "description": "",
@@ -141,7 +141,7 @@
       }
     },
     {
-      "type": "definition",
+      "type": "function",
       "id": "4",
       "name": "function call",
       "description": "",
@@ -157,7 +157,7 @@
         "variable": false,
         "v": {
           "type": "application",
-          "definition": {
+          "function": {
             "variable": false,
             "v": "2"
           },
@@ -175,7 +175,7 @@
       }
     },
     {
-      "type": "definition",
+      "type": "function",
       "id": "5",
       "name": "function call",
       "description": "",
@@ -191,7 +191,7 @@
         "variable": false,
         "v": {
           "type": "application",
-          "definition": {
+          "function": {
             "variable": false,
             "v": "2"
           },
@@ -209,7 +209,7 @@
       }
     },
     {
-      "type": "definition",
+      "type": "function",
       "id": "6",
       "name": "trivial application",
       "description": "",
@@ -225,7 +225,7 @@
         "variable": false,
         "v": {
           "type": "application",
-          "definition": {
+          "function": {
             "variable": false,
             "v": "1"
           },
@@ -250,7 +250,7 @@
       }
     },
     {
-      "type": "definition",
+      "type": "function",
       "id": "7",
       "name": "meta function",
       "description": "",
@@ -262,7 +262,7 @@
           "domain": {
             "variable": false,
             "v": {
-              "domainType": "definition",
+              "domainType": "function",
               "signature": {
                 "domain": "string",
                 "domainParamsCount": 0,
@@ -286,7 +286,7 @@
         "variable": false,
         "v": {
           "type": "application",
-          "definition": {
+          "function": {
             "variable": true,
             "p": 0
           },

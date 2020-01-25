@@ -1,67 +1,24 @@
 const _ = require('underscore')
 
 function validate (program) {
-  const errors = []
-  const context = { errors, program }
-  if (!validateProgram(program, context)) {
-    return errors
-  }
-  if (!isUnique(program.definitions, 'id', context)) {
-    return errors
-  }
-  program.definitions.forEach(d => {
-    const definitionContext = { errors, program, definition: d }
-    validateDefinition(d, definitionContext)
-  })
-  return errors
-}
-
-function isValid (errors) {
-  return errors.length === 0
-}
-
-function requiredProps (obj, props, context) {
-  props.forEach(p => {
-    if (_.property(p)(obj) === undefined) {
-      context.errors.push(`Missing property: ${p}`)
-      return false
-    }
-  })
-  return isValid(context.errors)
-}
-
-function oneOf (val, options, context) {
-  if (!_.includes(options, val)) {
-    context.errors.push(`${val} not allowed as a value`)
+  if (!isUnique(program.definitions, 'id')) {
     return false
   }
-  return isValid(context.errors)
+  return _.every(program.definitions.map(d => {
+    const context = { program, definition: d }
+    return validateDefinition(d, context)
+  }), r => r)
 }
 
-function isUnique (items, key, context) {
+function isUnique (items, key) {
   const ids = items.map(i => i[key])
-  if (_.uniq(ids).length !== items.length) {
-    context.errors.push(`Duplicate ids`)
-    return false
-  }
-  return isValid(context.errors)
-}
-
-function validateProgram (program, context) {
-  return requiredProps(program, ['definitions'], context)
+  return _.uniq(ids).length !== items.length
 }
 
 function validateDefinition (d, context) {
-  const props = ['type', 'id', 'name', 'description', 'domainParams', 'valueParams', 'domain', 'body']
   const paramRefs = {
     value: [],
     domain: []
-  }
-  if (!requiredProps(d, props, context)) {
-    return false
-  }
-  if (!validateDomainParams(d.domainParams, context)) {
-    return false
   }
   if (!validateValueParams(d.valueParams, paramRefs, context)) {
     return false
@@ -82,32 +39,13 @@ function validateDefinition (d, context) {
 }
 
 function validateValueParams (params, paramRefs, context) {
-  const props = ['name', 'description', 'domain']
-  params.forEach(param => {
-    if (!requiredProps(param, props, context)) {
-      return
-    }
-    validateDomain(param.domain, paramRefs, context)
-  })
-  return isValid(context.errors)
-}
-
-function validateDomainParams (params, context) {
-  const props = ['name', 'description']
-  params.forEach(param => {
-    requiredProps(param, props, context)
-  })
-  return isValid(context.errors)
+  return _.every(params.map(param => {
+    return validateDomain(param.domain, paramRefs, context)
+  }), r => r)
 }
 
 function validateDomain (domain, paramRefs, context) {
-  if (!validateVariable(domain, 'domain', paramRefs, context)) {
-    return false
-  }
-  if (!domain.variable) {
-    requiredProps(domain.v, ['domainType'], context)
-  }
-  return isValid(context.errors)
+  return validateVariable(domain, 'domain', paramRefs, context)
 }
 
 function validateValue (value, paramRefs, context) {

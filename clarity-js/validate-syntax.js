@@ -1,135 +1,282 @@
 const _ = require('underscore')
 
+const variableTypes = [
+  'function',
+  'domain',
+  'value'
+]
+
+const primitiveValidators = {
+  'string-literal': new RegExp('.*'),
+  'bool-literal': new RegExp('^(true|false)$'),
+  'integer-literal': new RegExp('^\\d+$'),
+  'domain-literal': new RegExp('^(string|integer|bool|function)$')
+}
+
+const objValidators = {
+  program: [
+    {
+      key: 'functions',
+      type: 'function-definition',
+      list: true
+    }
+  ],
+  'function-definition': [
+    {
+      key: 'id',
+      type: 'string-literal',
+      list: false
+    },
+    {
+      key: 'function',
+      type: 'function',
+      list: false
+    }
+  ],
+  function: [
+    {
+      key: 'name',
+      type: 'string-literal',
+      list: false
+    },
+    {
+      key: 'description',
+      type: 'string-literal',
+      list: false
+    },
+    {
+      key: 'domainParams',
+      type: 'domainParam',
+      list: true
+    },
+    {
+      key: 'valueParams',
+      type: 'valueParam',
+      list: true
+    },
+    {
+      key: 'domain',
+      type: 'domain',
+      list: false
+    },
+    {
+      key: 'body',
+      type: 'value',
+      list: false
+    }
+  ],
+  domainParam: [
+    {
+      key: 'name',
+      type: 'string-literal',
+      list: false
+    },
+    {
+      key: 'description',
+      type: 'string-literal',
+      list: false
+    }
+  ],
+  valueParam: [
+    {
+      key: 'name',
+      type: 'string-literal',
+      list: false
+    },
+    {
+      key: 'description',
+      type: 'string-literal',
+      list: false
+    },
+    {
+      key: 'domain',
+      type: 'domain',
+      list: false
+    }
+  ],
+  domain: [
+    {
+      list: false,
+      allowedTypes: ['domain-literal', 'function-domain']
+    }
+  ],
+  'function-domain': [
+    {
+      key: 'domain',
+      type: 'domain',
+      list: false
+    },
+    {
+      key: 'domainParamsCount',
+      type: 'integer-literal',
+      list: false
+    },
+    {
+      key: 'valueParamDomains',
+      type: 'domain',
+      list: true
+    }
+  ],
+  value: [
+    {
+      list: false,
+      allowedTypes: ['application', 'ifelse', 'function', 'integer-literal', 'string-literal', 'bool-literal']
+    }
+  ],
+  application: [
+    {
+      key: 'function',
+      type: 'function',
+      list: false
+    },
+    {
+      key: 'valueArgs',
+      type: 'value',
+      list: true
+    },
+    {
+      key: 'domainArgs',
+      type: 'domain',
+      list: true
+    }
+  ],
+  ifelse: [
+    {
+      key: 'domain',
+      type: 'domain',
+      list: false
+    },
+    {
+      key: 'condition',
+      type: 'bool-literal',
+      list: false
+    },
+    {
+      key: 'if',
+      type: 'value',
+      list: false
+    },
+    {
+      key: 'else',
+      type: 'value',
+      list: false
+    }
+  ]
+}
+
 function validateSyntax (program) {
-  if (!validateProgram(program)) {
-    return false
-  }
-  const results = program.functions.map(f => validateFunction(f))
-  return _.every(results, r => r)
+  return withPath(validateToken(program, 'program'), ['program'])
 }
 
-function requiredProps (obj, props) {
-  return _.every(props.map(p => _.property(p)(obj) !== undefined), r => r)
-}
-
-function oneOf (val, options) {
-  return _.includes(options, val)
-}
-
-function validateProgram (program) {
-  return requiredProps(program, ['functions'])
-}
-
-function validateFunction (fn) {
-  const props = ['type', 'id', 'name', 'description', 'domainParams', 'valueParams', 'domain', 'body']
-  if (!requiredProps(fn, props)) {
-    return false
-  }
-  if (!validateDomainParams(fn.domainParams)) {
-    return false
-  }
-  if (!validateValueParams(fn.valueParams)) {
-    return false
-  }
-  if (!validateDomain(fn.domain)) {
-    return false
-  }
-  if (!validateValue(fn.body)) {
-    return false
-  }
-  return true
-}
-
-function validateValueParams (params) {
-  const props = ['name', 'description', 'domain']
-  return _.every(params.map(param => {
-    return requiredProps(param, props) && validateDomain(param.domain)
-  }), r => r)
-}
-
-function validateDomainParams (params) {
-  const props = ['name', 'description']
-  return _.every(params.map(param => requiredProps(param, props)))
-}
-
-function validateDomain (domain) {
-  const ifNotVariable = (v) => {
-    return requiredProps(v, ['domainType'])
-  }
-  return validateVariable(domain, ifNotVariable)
-}
-
-function validateValue (value) {
-  const ifNotVariable = (v) => {
-    if (!requiredProps(v, ['type'])) {
-      return false
-    }
-    if (!oneOf(v.type, ['application', 'ifelse', 'integer-literal', 'string-literal', 'bool-literal', 'complex-literal', 'function-literal'])) {
-      return false
-    }
-    if (v.type === 'application') {
-      return validateApplication(v)
-    }
-    if (v.type === 'ifelse') {
-      return validateIfelse(v)
-    }
-    return true
-  }
-  return validateVariable(value, ifNotVariable)
-}
-
-function validateApplication (app) {
-  const props = ['function', 'valueArgs', 'domainArgs']
-  if (!requiredProps(app, props)) {
-    return false
-  }
-  const ifNotVariable = () => {
-    return validateDomainArgs(app.domainArgs) && validateValueArgs(app.valueArgs)
-  }
-  return validateVariable(app.function, ifNotVariable)
-}
-
-function validateDomainArgs (domainArgs) {
-  // TODO
-  return true
-}
-
-function validateValueArgs (valueArgs) {
-  // TODO
-  return true
-}
-
-function validateIfelse (ifelse, paramRefs, context) {
-  const props = ['domain', 'condition', 'if', 'else']
-  if (!requiredProps(ifelse, props, context)) {
-    return false
-  }
-  if (!validateDomain(ifelse.domain)) {
-    return false
-  }
-  if (!validateValue(ifelse.condition)) {
-    return false
-  }
-  if (!validateValue(ifelse.if)) {
-    return false
-  }
-  if (!validateValue(ifelse.else)) {
-    return false
-  }
-  return true
-}
-
-function validateVariable (item, nonVariableCb = () => true, variableCb = () => true) {
-  if (!requiredProps(item, ['variable'])) {
-    return false
-  }
-  if (item.variable) {
-    return requiredProps(item, ['p']) && variableCb(item.p)
+function validateToken (token, tokenType, variableApplied = false) {
+  const keysWithType = objValidators[tokenType]
+  const regex = primitiveValidators[tokenType]
+  if (regex !== undefined) {
+    return validatePrimitive(regex, token)
+  } else if (!variableApplied && _.includes(variableTypes, tokenType)) {
+    return validateVariable(token, tokenType)
   } else {
-    return requiredProps(item, ['v']) && nonVariableCb(item.v)
+    return chainIfValid([
+      () => hasKeys(token, _.map(keysWithType, kWT => kWT.key)),
+      () => validateObject(keysWithType, token)
+    ])
   }
 }
 
-module.exports = {
-  validateSyntax
+function validatePrimitive (regex, value) {
+  return validityResult(regex.test(value), 'invalid-primitive')
 }
+
+function validateVariable (token, tokenType) {
+  return withPath(chainIfValid([
+    () => hasKeys(token, ['variable', 'child']),
+    () => {
+      if (token.variable === 'true') {
+        return validateToken(token.child, 'integer-literal')
+      } else {
+        return validateToken(token.child, tokenType, true)
+      }
+    }
+  ]), ['variable'])
+}
+
+function validateObject (keysWithType, token) {
+  return validateEach(keysWithType, (keyWithType) => {
+    const allowedTypes = keyWithType.allowedTypes
+    if (allowedTypes !== undefined) {
+      return validateAllowedTypes(keyWithType.list, allowedTypes, token)
+    } else {
+      return validateProperty(keyWithType.list, keyWithType.type, token, keyWithType.key)
+    }
+  })
+}
+
+function validateAllowedTypes (isList, allowedTypes, token) {
+  chainIfValid([
+    () => validityResult(_.contains(allowedTypes, token['childType']), 'type-not-allowed'),
+    () => validateProperty(isList, token['childType'], token, 'child')
+  ])
+}
+
+function validateProperty (isList, propertyType, token, key) {
+  const property = token[key]
+  return (
+    isList
+      ? validateEach(property, (item, i) => {
+        return withPath(validateToken(item, propertyType), [key, String(i)])
+      })
+      : withPath(validateToken(property, propertyType), [key])
+  )
+}
+
+function validateEach (list, fn) {
+  const chainedCalls = list.map((item, i) => {
+    return () => fn(item, i)
+  })
+  return chainIfValid(chainedCalls)
+}
+
+function validityResult (isValid, errorCode) {
+  return {
+    isValid,
+    errorCode: isValid ? '' : errorCode,
+    errorPath: []
+  }
+}
+
+function withPath (result, path) {
+  return result.isValid
+    ? result
+    : {
+      isValid: false,
+      errorCode: result.errorCode,
+      errorPath: _.union(path, result.errorPath)
+    }
+}
+
+function chainIfValid (fnList) {
+  const result = _.first(fnList)()
+  if (fnList.length > 1) {
+    return result.isValid ? chainIfValid(_.rest(fnList)) : result
+  } else {
+    return result
+  }
+}
+
+function hasAllExpectedKeys (expectedKeys, actualKeys) {
+  return validityResult(_.difference(expectedKeys, actualKeys).length === 0, 'missing-key')
+}
+
+function hasNoExtraKeys (expectedKeys, actualKeys) {
+  return validityResult(_.difference(actualKeys, expectedKeys).length === 0, 'extra-key')
+}
+
+function hasKeys (obj, expectedKeys) {
+  const actualKeys = _.keys(obj)
+  return chainIfValid([
+    () => hasAllExpectedKeys(expectedKeys, actualKeys),
+    () => hasNoExtraKeys(expectedKeys, actualKeys)
+  ])
+}
+
+module.exports = validateSyntax

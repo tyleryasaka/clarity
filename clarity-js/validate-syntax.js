@@ -119,7 +119,7 @@ const objValidators = {
   application: [
     {
       key: 'function',
-      type: 'function',
+      type: 'string-literal',
       list: false
     },
     {
@@ -181,7 +181,7 @@ function validatePrimitive (regex, value) {
 }
 
 function validateVariable (token, tokenType) {
-  return withPath(chainIfValid([
+  return chainIfValid([
     () => hasKeys(token, ['variable', 'child']),
     () => {
       if (token.variable === 'true') {
@@ -190,7 +190,7 @@ function validateVariable (token, tokenType) {
         return validateToken(token.child, tokenType, true)
       }
     }
-  ]), ['variable'])
+  ])
 }
 
 function validateObject (keysWithType, token) {

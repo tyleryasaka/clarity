@@ -1,305 +1,366 @@
 {
   "functions": [
     {
-      "type": "function",
       "id": "1",
-      "name": "trivial abstract",
-      "description": "",
-      "domainParams": [
-        {
-          "name": "my domain",
-          "description": ""
-        }
-      ],
-      "valueParams": [
-        {
-          "name": "my value",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "trivial abstract",
           "description": "",
+          "domainParams": [
+            {
+              "name": "my domain",
+              "description": ""
+            }
+          ],
+          "valueParams": [
+            {
+              "name": "my value",
+              "description": "",
+              "domain": {
+                "variable": "true",
+                "child": "0"
+              }
+            }
+          ],
           "domain": {
-            "variable": true,
-            "p": 0
+            "variable": "true",
+            "child": "0"
+          },
+          "body": {
+            "variable": "true",
+            "child": "0"
           }
         }
-      ],
-      "domain": {
-        "variable": true,
-        "p": 0
-      },
-      "body": {
-        "variable": true,
-        "p": 0
       }
     },
     {
-      "type": "function",
       "id": "2",
-      "name": "hello world func",
-      "description": "",
-      "domainParams": [],
-      "valueParams": [
-        {
-          "name": "my bool",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "hello world func",
           "description": "",
+          "domainParams": [],
+          "valueParams": [
+            {
+              "name": "my bool",
+              "description": "",
+              "domain": {
+                "variable": "false",
+                "child": {
+                  "childType": "domain-literal",
+                  "child": "bool"
+                }
+              }
+            }
+          ],
           "domain": {
-            "variable": false,
-            "v": {
-              "domainType": "bool"
-            }
-          }
-        }
-      ],
-      "domain": {
-        "variable": false,
-        "v": {
-          "domainType": "string"
-        }
-      },
-      "body": {
-        "variable": false,
-        "v": {
-          "type": "ifelse",
-          "domain": {
-            "variable": false,
-            "v": {
-              "domainType": "string"
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "string"
             }
           },
-          "condition": {
-            "variable": true,
-            "p": 0
-          },
-          "if": {
-            "variable": false,
-            "v": {
-              "type": "string-literal",
-              "literalValue": "hello"
-            }
-          },
-          "else": {
-            "variable": false,
-            "v": {
-              "type": "string-literal",
-              "literalValue": "world"
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "ifelse",
+              "child": {
+                "domain": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "domain-literal",
+                    "child": "string"
+                  }
+                },
+                "condition": {
+                  "variable": "true",
+                  "child": "0"
+                },
+                "if": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "string-literal",
+                    "child": "hello"
+                  }
+                },
+                "else": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "string-literal",
+                    "child": "world"
+                  }
+                }
+              }
             }
           }
         }
       }
     },
     {
-      "type": "function",
       "id": "3",
-      "name": "world hello func",
-      "description": "",
-      "domainParams": [],
-      "valueParams": [
-        {
-          "name": "my bool",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "world hello func",
           "description": "",
+          "domainParams": [],
+          "valueParams": [
+            {
+              "name": "my bool",
+              "description": "",
+              "domain": {
+                "variable": "false",
+                "child": {
+                  "childType": "domain-literal",
+                  "child": "bool"
+                }
+              }
+            }
+          ],
           "domain": {
-            "variable": false,
-            "v": {
-              "domainType": "bool"
-            }
-          }
-        }
-      ],
-      "domain": {
-        "variable": false,
-        "v": {
-          "domainType": "string"
-        }
-      },
-      "body": {
-        "variable": false,
-        "v": {
-          "type": "ifelse",
-          "domain": {
-            "variable": false,
-            "v": {
-              "domainType": "string"
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "string"
             }
           },
-          "condition": {
-            "variable": true,
-            "p": 0
-          },
-          "if": {
-            "variable": false,
-            "v": {
-              "type": "string-literal",
-              "literalValue": "world"
-            }
-          },
-          "else": {
-            "variable": false,
-            "v": {
-              "type": "string-literal",
-              "literalValue": "hello"
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "ifelse",
+              "child": {
+                "domain": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "domain-literal",
+                    "child": "string"
+                  }
+                },
+                "condition": {
+                  "variable": "true",
+                  "child": 0
+                },
+                "if": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "string-literal",
+                    "child": "world"
+                  }
+                },
+                "else": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "string-literal",
+                    "child": "hello"
+                  }
+                }
+              }
             }
           }
         }
       }
     },
     {
-      "type": "function",
       "id": "4",
-      "name": "function call",
-      "description": "",
-      "domainParams": [],
-      "valueParams": [],
-      "domain": {
-        "variable": false,
-        "v": {
-          "domainType": "string"
-        }
-      },
-      "body": {
-        "variable": false,
-        "v": {
-          "type": "application",
-          "function": {
-            "variable": false,
-            "v": "2"
-          },
-          "valueArgs": [
-            {
-              "variable": false,
-              "v": {
-                "type": "bool-literal",
-                "literalValue": true
-              }
-            }
-          ],
-          "domainArgs": []
-        }
-      }
-    },
-    {
-      "type": "function",
-      "id": "5",
-      "name": "function call",
-      "description": "",
-      "domainParams": [],
-      "valueParams": [],
-      "domain": {
-        "variable": false,
-        "v": {
-          "domainType": "string"
-        }
-      },
-      "body": {
-        "variable": false,
-        "v": {
-          "type": "application",
-          "function": {
-            "variable": false,
-            "v": "2"
-          },
-          "valueArgs": [
-            {
-              "variable": false,
-              "v": {
-                "type": "bool-literal",
-                "literalValue": false
-              }
-            }
-          ],
-          "domainArgs": []
-        }
-      }
-    },
-    {
-      "type": "function",
-      "id": "6",
-      "name": "trivial application",
-      "description": "",
-      "domainParams": [],
-      "valueParams": [],
-      "domain": {
-        "variable": false,
-        "v": {
-          "domainType": "bool"
-        }
-      },
-      "body": {
-        "variable": false,
-        "v": {
-          "type": "application",
-          "function": {
-            "variable": false,
-            "v": "1"
-          },
-          "domainArgs": [
-            {
-              "variable": false,
-              "v": {
-                "domainType": "bool"
-              }
-            }
-          ],
-          "valueArgs": [
-            {
-              "variable": false,
-              "v": {
-                "type": "bool-literal",
-                "literalValue": false
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "function",
-      "id": "7",
-      "name": "meta function",
-      "description": "",
-      "domainParams": [],
-      "valueParams": [
-        {
-          "name": "inner function",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "function call",
           "description": "",
+          "domainParams": [],
+          "valueParams": [],
           "domain": {
-            "variable": false,
-            "v": {
-              "domainType": "function",
-              "signature": {
-                "domain": "string",
-                "domainParamsCount": 0,
-                "valueParamDomains": [
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "string"
+            }
+          },
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "application",
+              "child": {
+                "function": {
+                  "variable": "false",
+                  "child": "2"
+                },
+                "valueArgs": [
                   {
-                    "domainType": "bool"
+                    "variable": "false",
+                    "child": {
+                      "childType": "bool-literal",
+                      "child": "true"
+                    }
+                  }
+                ],
+                "domainArgs": []
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "5",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "function call",
+          "description": "",
+          "domainParams": [],
+          "valueParams": [],
+          "domain": {
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "string"
+            }
+          },
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "application",
+              "child": {
+                "function": {
+                  "variable": "false",
+                  "child": "2"
+                },
+                "valueArgs": [
+                  {
+                    "variable": "false",
+                    "child": {
+                      "childType": "bool-literal",
+                      "child": "false"
+                    }
+                  }
+                ],
+                "domainArgs": []
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "6",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "trivial application",
+          "description": "",
+          "domainParams": [],
+          "valueParams": [],
+          "domain": {
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "bool"
+            }
+          },
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "application",
+              "child": {
+                "function": {
+                  "variable": "false",
+                  "child": "1"
+                },
+                "domainArgs": [
+                  {
+                    "variable": "false",
+                    "child": {
+                      "childType": "domain-literal",
+                      "child": "bool"
+                    }
+                  }
+                ],
+                "valueArgs": [
+                  {
+                    "variable": "false",
+                    "child": {
+                      "childType": "bool-literal",
+                      "child": "false"
+                    }
                   }
                 ]
               }
             }
           }
         }
-      ],
-      "domain": {
-        "variable": false,
-        "v": {
-          "domainType": "string"
-        }
-      },
-      "body": {
-        "variable": false,
-        "v": {
-          "type": "application",
-          "function": {
-            "variable": true,
-            "p": 0
-          },
-          "domainArgs": [],
-          "valueArgs": [
+      }
+    },
+    {
+      "id": "7",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "meta function",
+          "description": "",
+          "domainParams": [],
+          "valueParams": [
             {
-              "variable": false,
-              "v": {
-                "type": "bool-literal",
-                "literalValue": true
+              "name": "inner function",
+              "description": "",
+              "domain": {
+                "variable": "false",
+                "child": {
+                  "childType": "function-signature",
+                  "child": {
+                    "domain": {
+                      "variable": "false",
+                      "child": {
+                        "childType": "domain-literal",
+                        "child": "string"
+                      }
+                    },
+                    "domainParamsCount": "0",
+                    "valueParamDomains": [
+                      {
+                        "variable": "false",
+                        "child": {
+                          "childType": "domain-literal",
+                          "child": "bool"
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             }
-          ]
+          ],
+          "domain": {
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "string"
+            }
+          },
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "application",
+              "child": {
+                "function": {
+                  "variable": "true",
+                  "child": "0"
+                },
+                "domainArgs": [],
+                "valueArgs": [
+                  {
+                    "variable": "false",
+                    "child": {
+                      "childType": "bool-literal",
+                      "child": "true"
+                    }
+                  }
+                ]
+              }
+            }
+          }
         }
       }
     }

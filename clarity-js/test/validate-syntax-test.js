@@ -3,7 +3,7 @@
 const fs = require('fs')
 const assert = require('assert')
 
-const programJSON = fs.readFileSync('./test/stubs/syntax-1.json', 'utf8')
+const programJSON = fs.readFileSync('./test/stubs/program.json', 'utf8')
 const validateSyntax = require('../validate-syntax')
 
 describe('validateSyntax', function () {

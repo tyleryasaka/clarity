@@ -13,6 +13,11 @@ const primitiveValidators = {
   'domain-literal': new RegExp('^(string|integer|bool|function)$')
 }
 
+const multiTypes = {
+  value: ['application', 'ifelse', 'function', 'integer-literal', 'string-literal', 'bool-literal'],
+  domain: ['domain-literal', 'function-domain']
+}
+
 const objValidators = {
   program: [
     {
@@ -94,12 +99,6 @@ const objValidators = {
       list: false
     }
   ],
-  domain: [
-    {
-      list: false,
-      allowedTypes: ['domain-literal', 'function-domain']
-    }
-  ],
   'function-domain': [
     {
       key: 'domain',
@@ -115,12 +114,6 @@ const objValidators = {
       key: 'valueParamDomains',
       type: 'domain',
       list: true
-    }
-  ],
-  value: [
-    {
-      list: false,
-      allowedTypes: ['application', 'ifelse', 'function', 'integer-literal', 'string-literal', 'bool-literal']
     }
   ],
   application: [
@@ -148,7 +141,7 @@ const objValidators = {
     },
     {
       key: 'condition',
-      type: 'bool-literal',
+      type: 'value',
       list: false
     },
     {
@@ -171,15 +164,15 @@ function validateSyntax (program) {
 function validateToken (token, tokenType, variableApplied = false) {
   const keysWithType = objValidators[tokenType]
   const regex = primitiveValidators[tokenType]
+  const allowedTypes = multiTypes[tokenType]
   if (regex !== undefined) {
     return validatePrimitive(regex, token)
   } else if (!variableApplied && _.includes(variableTypes, tokenType)) {
     return validateVariable(token, tokenType)
+  } else if (allowedTypes !== undefined) {
+    return validateMultitype(allowedTypes, token)
   } else {
-    return chainIfValid([
-      () => hasKeys(token, _.map(keysWithType, kWT => kWT.key)),
-      () => validateObject(keysWithType, token)
-    ])
+    return validateObject(keysWithType, token)
   }
 }
 
@@ -201,20 +194,21 @@ function validateVariable (token, tokenType) {
 }
 
 function validateObject (keysWithType, token) {
-  return validateEach(keysWithType, (keyWithType) => {
-    const allowedTypes = keyWithType.allowedTypes
-    if (allowedTypes !== undefined) {
-      return validateAllowedTypes(keyWithType.list, allowedTypes, token)
-    } else {
-      return validateProperty(keyWithType.list, keyWithType.type, token, keyWithType.key)
+  return chainIfValid([
+    () => hasKeys(token, _.map(keysWithType, kWT => kWT.key)),
+    () => {
+      return validateEach(keysWithType, (keyWithType) => {
+        return validateProperty(keyWithType.list, keyWithType.type, token, keyWithType.key)
+      })
     }
-  })
+  ])
 }
 
-function validateAllowedTypes (isList, allowedTypes, token) {
-  chainIfValid([
+function validateMultitype (allowedTypes, token) {
+  return chainIfValid([
+    () => hasKeys(token, ['childType', 'child']),
     () => validityResult(_.contains(allowedTypes, token['childType']), 'type-not-allowed'),
-    () => validateProperty(isList, token['childType'], token, 'child')
+    () => validateProperty(false, token['childType'], token, 'child')
   ])
 }
 
@@ -222,9 +216,16 @@ function validateProperty (isList, propertyType, token, key) {
   const property = token[key]
   return (
     isList
-      ? validateEach(property, (item, i) => {
-        return withPath(validateToken(item, propertyType), [key, String(i)])
-      })
+      ? chainIfValid([
+        () => validityResult(Array.isArray(property), 'invalid-list'),
+        () => {
+          return property.length > 0
+            ? validateEach(property, (item, i) => {
+              return withPath(validateToken(item, propertyType), [key, String(i)])
+            })
+            : { isValid: true, errorCode: '', errorPath: [] }
+        }
+      ])
       : withPath(validateToken(property, propertyType), [key])
   )
 }

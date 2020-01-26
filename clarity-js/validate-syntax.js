@@ -15,7 +15,7 @@ const primitiveValidators = {
 
 const multiTypes = {
   value: ['application', 'ifelse', 'function', 'integer-literal', 'string-literal', 'bool-literal'],
-  domain: ['domain-literal', 'function-domain']
+  domain: ['domain-literal', 'function-signature']
 }
 
 const objValidators = {
@@ -99,7 +99,7 @@ const objValidators = {
       list: false
     }
   ],
-  'function-domain': [
+  'function-signature': [
     {
       key: 'domain',
       type: 'domain',

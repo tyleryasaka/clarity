@@ -33,7 +33,7 @@ class MainNav extends Component<Props, State> {
       <>
         <Navbar className={Classes.DARK}>
           <NavbarGroup align={Alignment.LEFT}>
-            <NavbarHeading>clarity</NavbarHeading>
+            <NavbarHeading>Tactile</NavbarHeading>
             <NavbarDivider />
             <Button className={Classes.MINIMAL} icon="home" text="Home" />
             <Button className={Classes.MINIMAL} icon="document" text="Files" />

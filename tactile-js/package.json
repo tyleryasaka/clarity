@@ -1,5 +1,5 @@
 {
-  "name": "clarity-js",
+  "name": "tactile-js",
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tyleryasaka/clarity.git"
+    "url": "git+https://github.com/tyleryasaka/tactile.git"
   },
   "author": "Tyler Yasaka",
   "license": "CC0-1.0",
   "bugs": {
-    "url": "https://github.com/tyleryasaka/clarity/issues"
+    "url": "https://github.com/tyleryasaka/tactile/issues"
   },
-  "homepage": "https://github.com/tyleryasaka/clarity#readme",
+  "homepage": "https://github.com/tyleryasaka/tactile#readme",
   "dependencies": {
     "underscore": "^1.9.2"
   },

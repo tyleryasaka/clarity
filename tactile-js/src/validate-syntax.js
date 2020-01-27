@@ -1,4 +1,7 @@
 const _ = require('underscore')
+const {
+  validityResult
+} = require('./utils')
 
 const variableTypes = [
   'function',
@@ -235,14 +238,6 @@ function validateEach (list, fn) {
     return () => fn(item, i)
   })
   return chainIfValid(chainedCalls)
-}
-
-function validityResult (isValid, errorCode) {
-  return {
-    isValid,
-    errorCode: isValid ? '' : errorCode,
-    errorPath: []
-  }
 }
 
 function withPath (result, path) {

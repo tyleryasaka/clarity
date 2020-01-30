@@ -10,7 +10,7 @@ const {
   primitiveValidators,
   multiTypes,
   nodeValidators
-} = require('./definitions')
+} = require('./node-definitions')
 
 function validateSyntax (program) {
   return withPath(validateNode(program, 'program'), ['program'])

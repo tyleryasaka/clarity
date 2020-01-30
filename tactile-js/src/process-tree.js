@@ -79,6 +79,27 @@ function processObj (node, nodeType, path, keysWithType) {
   }
 }
 
+function getTrueNode (node, nodeType, variableApplied, isVariable) {
+  const multitypes = multiTypes[nodeType]
+  const isVariableType = _.includes(variableTypes, nodeType)
+  if (isVariableType && !variableApplied) {
+    // need to determine whether this is variable node
+    return node.variable === 'true'
+      ? getTrueNode(node.child, nodeType, true, true)
+      : getTrueNode(undefined, nodeType, true, false)
+  } else if (isVariableType && variableApplied && isVariable) {
+    // this is a variable node
+    return { isVariable, node, nodeType }
+  } else if (multitypes !== undefined) {
+    // not variable; multitype, get the child node with specific type
+    return { isVariable: false, node: node.child, nodeType: node.childType }
+  } else {
+    // plain old non-variable non-multitype node
+    return { isVariable, node, nodeType }
+  }
+}
+
 module.exports = {
-  processNode
+  processNode,
+  getTrueNode
 }

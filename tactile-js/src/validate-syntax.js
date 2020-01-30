@@ -14,8 +14,8 @@ const {
 } = require('./process-tree')
 
 function validateSyntax (program) {
-  const { nodeClass, path, getNexts } = processNode(program, 'program')
-  return validateNode(program, 'program', nodeClass, path, getNexts)
+  const { node, nodeType, nodeClass, path, getNexts } = processNode(program, 'program')
+  return validateNode(node, nodeType, nodeClass, path, getNexts)
 }
 
 function validateNode (node, nodeType, nodeClass, path, getNexts) {

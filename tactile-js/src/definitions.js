@@ -16,7 +16,7 @@ const multiTypes = {
   domain: ['domain-literal', 'function-signature']
 }
 
-const objValidators = {
+const nodeValidators = {
   program: [
     {
       key: 'functions',
@@ -159,5 +159,5 @@ module.exports = {
   variableTypes,
   primitiveValidators,
   multiTypes,
-  objValidators
+  nodeValidators
 }

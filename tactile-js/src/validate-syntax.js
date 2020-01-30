@@ -6,7 +6,7 @@ const {
   variableTypes,
   primitiveValidators,
   multiTypes,
-  objValidators
+  nodeValidators
 } = require('./definitions')
 
 function validateSyntax (program) {
@@ -14,7 +14,7 @@ function validateSyntax (program) {
 }
 
 function validateToken (token, tokenType, variableApplied = false) {
-  const keysWithType = objValidators[tokenType]
+  const keysWithType = nodeValidators[tokenType]
   const regex = primitiveValidators[tokenType]
   const allowedTypes = multiTypes[tokenType]
   if (regex !== undefined) {
@@ -24,7 +24,7 @@ function validateToken (token, tokenType, variableApplied = false) {
   } else if (allowedTypes !== undefined) {
     return validateMultitype(allowedTypes, token)
   } else {
-    return validateObject(keysWithType, token)
+    return validateNode(keysWithType, token)
   }
 }
 
@@ -45,7 +45,7 @@ function validateVariable (token, tokenType) {
   ])
 }
 
-function validateObject (keysWithType, token) {
+function validateNode (keysWithType, token) {
   return chainIfValid([
     () => hasKeys(token, _.map(keysWithType, kWT => kWT.key)),
     () => {
@@ -116,8 +116,8 @@ function hasNoExtraKeys (expectedKeys, actualKeys) {
   return validityResult(_.difference(actualKeys, expectedKeys).length === 0, 'extra-key')
 }
 
-function hasKeys (obj, expectedKeys) {
-  const actualKeys = _.keys(obj)
+function hasKeys (node, expectedKeys) {
+  const actualKeys = _.keys(node)
   return chainIfValid([
     () => hasAllExpectedKeys(expectedKeys, actualKeys),
     () => hasNoExtraKeys(expectedKeys, actualKeys)

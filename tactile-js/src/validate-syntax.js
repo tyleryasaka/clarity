@@ -6,46 +6,54 @@ const {
   validateEach
 } = require('./utils')
 const {
-  variableTypes,
   primitiveValidators,
   multiTypes,
   nodeValidators
 } = require('./node-definitions')
+const {
+  processNode
+} = require('./process-tree')
 
 function validateSyntax (program) {
-  return withPath(validateNode(program, 'program'), ['program'])
+  const { nodeClass, getNexts } = processNode(program, 'program')
+  return withPath(validateNode(program, 'program', nodeClass, getNexts), ['program'])
 }
 
-function validateNode (node, nodeType, variableApplied = false) {
-  const keysWithType = nodeValidators[nodeType]
-  const regex = primitiveValidators[nodeType]
+function validateNode (node, nodeType, nodeClass, getNexts) {
   const allowedTypes = multiTypes[nodeType]
-  if (regex !== undefined) {
-    return validatePrimitive(regex, node)
-  } else if (!variableApplied && _.includes(variableTypes, nodeType)) {
-    return validateVariable(node, nodeType)
-  } else if (allowedTypes !== undefined) {
-    return validateMultitype(allowedTypes, node)
-  } else {
-    return validateObj(keysWithType, node)
-  }
-}
-
-function validatePrimitive (regex, value) {
-  return validityResult(regex.test(value), 'invalid-primitive')
-}
-
-function validateVariable (node, nodeType) {
-  return chainIfValid([
-    () => hasKeys(node, ['variable', 'child']),
-    () => {
-      if (node.variable === 'true') {
-        return validateNode(node.child, 'integer-literal')
-      } else {
-        return validateNode(node.child, nodeType, true)
+  const keysWithType = nodeValidators[nodeType]
+  const proceed = () => {
+    return chainIfValid(getNexts.map(next => {
+      return () => {
+        const { node, nodeType, nodeClass, getNexts } = next()
+        return validateNode(node, nodeType, nodeClass, getNexts)
       }
-    }
-  ])
+    }))
+  }
+  if (nodeClass === 'primitive') {
+    // primitive node type
+    const regex = primitiveValidators[nodeType]
+    return validityResult(regex.test(node), 'invalid-primitive')
+  } else if (nodeClass === 'variable') {
+    // variable node type
+    return chainIfValid([
+      () => hasKeys(node, ['variable', 'child']),
+      proceed
+    ])
+  } else if (allowedTypes !== undefined) {
+    // multitype node type
+    return chainIfValid([
+      () => hasKeys(node, ['childType', 'child']),
+      () => validityResult(_.contains(allowedTypes, node['childType']), 'type-not-allowed'),
+      proceed
+    ])
+  } else {
+    // object node type
+    return chainIfValid([
+      () => validateObj(keysWithType, node),
+      proceed
+    ])
+  }
 }
 
 function validateObj (keysWithType, node) {
@@ -53,36 +61,17 @@ function validateObj (keysWithType, node) {
     () => hasKeys(node, _.map(keysWithType, kWT => kWT.key)),
     () => {
       return validateEach(keysWithType, (keyWithType) => {
-        return validateProperty(keyWithType.list, keyWithType.type, node, keyWithType.key)
+        return validateProperty(keyWithType.list, node, keyWithType.key)
       })
     }
   ])
 }
 
-function validateMultitype (allowedTypes, node) {
-  return chainIfValid([
-    () => hasKeys(node, ['childType', 'child']),
-    () => validityResult(_.contains(allowedTypes, node['childType']), 'type-not-allowed'),
-    () => validateProperty(false, node['childType'], node, 'child')
-  ])
-}
-
-function validateProperty (isList, propertyType, node, key) {
+function validateProperty (isList, node, key) {
   const property = node[key]
-  return (
-    isList
-      ? chainIfValid([
-        () => validityResult(Array.isArray(property), 'invalid-list'),
-        () => {
-          return property.length > 0
-            ? validateEach(property, (item, i) => {
-              return withPath(validateNode(item, propertyType), [key, String(i)])
-            })
-            : { isValid: true, errorCode: '', errorPath: [] }
-        }
-      ])
-      : withPath(validateNode(property, propertyType), [key])
-  )
+  return isList
+    ? validityResult(Array.isArray(property), 'invalid-list')
+    : validityResult(true, '')
 }
 
 function hasAllExpectedKeys (expectedKeys, actualKeys) {

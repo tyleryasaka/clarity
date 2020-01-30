@@ -6,71 +6,75 @@ const {
   nodeValidators
 } = require('./node-definitions')
 
-function processNode (node, nodeType, variableApplied = false) {
+function processNode (node, nodeType, path = [], variableApplied = false) {
   const keysWithType = nodeValidators[nodeType]
   const regex = primitiveValidators[nodeType]
   const allowedTypes = multiTypes[nodeType]
   if (regex !== undefined) {
-    return processPrimitive(node, nodeType)
+    return processPrimitive(node, nodeType, path)
   } else if (!variableApplied && _.includes(variableTypes, nodeType)) {
-    return processVariable(node, nodeType)
+    return processVariable(node, nodeType, path)
   } else if (allowedTypes !== undefined) {
-    return processMultitype(node, nodeType, allowedTypes)
+    return processMultitype(node, nodeType, path, allowedTypes)
   } else {
-    return processObj(node, nodeType, keysWithType)
+    return processObj(node, nodeType, path, keysWithType)
   }
 }
 
-function processPrimitive (node, nodeType) {
+function processPrimitive (node, nodeType, path) {
   return {
-    node: node,
+    node,
     nodeClass: 'primitive',
-    nodeType: nodeType
+    path,
+    nodeType
   }
 }
 
-function processVariable (node, nodeType) {
+function processVariable (node, nodeType, path) {
   return {
-    node: node,
+    node,
     nodeClass: 'variable',
-    nodeType: nodeType,
+    nodeType,
+    path,
     getNexts: [() => {
       if (node.variable === 'true') {
-        return processNode(node.child, 'integer-literal')
+        return processNode(node.child, 'integer-literal', path)
       } else {
-        return processNode(node.child, nodeType, true)
+        return processNode(node.child, nodeType, path, true)
       }
     }]
   }
 }
 
-function processMultitype (node, nodeType, allowedTypes, handler, reducer) {
+function processMultitype (node, nodeType, path, allowedTypes) {
   return {
-    node: node,
+    node,
     nodeClass: 'multitype',
-    nodeType: nodeType,
-    getNexts: processProperty(false, node['childType'], node, 'child')
+    nodeType,
+    path,
+    getNexts: processProperty(false, node['childType'], node, 'child', path)
   }
 }
 
-function processProperty (isList, propertyType, node, key) {
+function processProperty (isList, propertyType, node, key, path) {
   const property = node[key]
   return isList
-    ? property.map(item => {
+    ? property.map((item, i) => {
       return () => {
-        return processNode(item, propertyType)
+        return processNode(item, propertyType, _.union(path, [key, String(i)]))
       }
     })
-    : [() => processNode(property, propertyType)]
+    : [() => processNode(property, propertyType, _.union(path, [key]))]
 }
 
-function processObj (node, nodeType, keysWithType) {
+function processObj (node, nodeType, path, keysWithType) {
   return {
-    node: node,
+    node,
     nodeClass: 'object',
-    nodeType: nodeType,
+    nodeType,
+    path,
     getNexts: _.flatten(keysWithType.map(keyWithType => {
-      return processProperty(keyWithType.list, keyWithType.type, node, keyWithType.key)
+      return processProperty(keyWithType.list, keyWithType.type, node, keyWithType.key, path)
     }))
   }
 }

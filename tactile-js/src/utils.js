@@ -1,21 +1,11 @@
 const _ = require('underscore')
 
-function validityResult (isValid, errorCode) {
+function validityResult (isValid, errorCode, errorPath) {
   return {
     isValid,
     errorCode: isValid ? '' : errorCode,
-    errorPath: []
+    errorPath
   }
-}
-
-function withPath (result, path) {
-  return result.isValid
-    ? result
-    : {
-      isValid: false,
-      errorCode: result.errorCode,
-      errorPath: _.union(path, result.errorPath)
-    }
 }
 
 function chainIfValid (fnList) {
@@ -36,7 +26,6 @@ function validateEach (list, fn) {
 
 module.exports = {
   validityResult,
-  withPath,
   chainIfValid,
   validateEach
 }

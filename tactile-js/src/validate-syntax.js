@@ -1,6 +1,9 @@
 const _ = require('underscore')
 const {
-  validityResult
+  validityResult,
+  withPath,
+  chainIfValid,
+  validateEach
 } = require('./utils')
 const {
   variableTypes,
@@ -80,32 +83,6 @@ function validateProperty (isList, propertyType, token, key) {
       ])
       : withPath(validateToken(property, propertyType), [key])
   )
-}
-
-function validateEach (list, fn) {
-  const chainedCalls = list.map((item, i) => {
-    return () => fn(item, i)
-  })
-  return chainIfValid(chainedCalls)
-}
-
-function withPath (result, path) {
-  return result.isValid
-    ? result
-    : {
-      isValid: false,
-      errorCode: result.errorCode,
-      errorPath: _.union(path, result.errorPath)
-    }
-}
-
-function chainIfValid (fnList) {
-  const result = _.first(fnList)()
-  if (fnList.length > 1) {
-    return result.isValid ? chainIfValid(_.rest(fnList)) : result
-  } else {
-    return result
-  }
 }
 
 function hasAllExpectedKeys (expectedKeys, actualKeys) {

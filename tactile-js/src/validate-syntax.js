@@ -13,21 +13,21 @@ const {
 } = require('./definitions')
 
 function validateSyntax (program) {
-  return withPath(validateToken(program, 'program'), ['program'])
+  return withPath(validateNode(program, 'program'), ['program'])
 }
 
-function validateToken (token, tokenType, variableApplied = false) {
-  const keysWithType = nodeValidators[tokenType]
-  const regex = primitiveValidators[tokenType]
-  const allowedTypes = multiTypes[tokenType]
+function validateNode (node, nodeType, variableApplied = false) {
+  const keysWithType = nodeValidators[nodeType]
+  const regex = primitiveValidators[nodeType]
+  const allowedTypes = multiTypes[nodeType]
   if (regex !== undefined) {
-    return validatePrimitive(regex, token)
-  } else if (!variableApplied && _.includes(variableTypes, tokenType)) {
-    return validateVariable(token, tokenType)
+    return validatePrimitive(regex, node)
+  } else if (!variableApplied && _.includes(variableTypes, nodeType)) {
+    return validateVariable(node, nodeType)
   } else if (allowedTypes !== undefined) {
-    return validateMultitype(allowedTypes, token)
+    return validateMultitype(allowedTypes, node)
   } else {
-    return validateNode(keysWithType, token)
+    return validateObj(keysWithType, node)
   }
 }
 
@@ -35,40 +35,40 @@ function validatePrimitive (regex, value) {
   return validityResult(regex.test(value), 'invalid-primitive')
 }
 
-function validateVariable (token, tokenType) {
+function validateVariable (node, nodeType) {
   return chainIfValid([
-    () => hasKeys(token, ['variable', 'child']),
+    () => hasKeys(node, ['variable', 'child']),
     () => {
-      if (token.variable === 'true') {
-        return validateToken(token.child, 'integer-literal')
+      if (node.variable === 'true') {
+        return validateNode(node.child, 'integer-literal')
       } else {
-        return validateToken(token.child, tokenType, true)
+        return validateNode(node.child, nodeType, true)
       }
     }
   ])
 }
 
-function validateNode (keysWithType, token) {
+function validateObj (keysWithType, node) {
   return chainIfValid([
-    () => hasKeys(token, _.map(keysWithType, kWT => kWT.key)),
+    () => hasKeys(node, _.map(keysWithType, kWT => kWT.key)),
     () => {
       return validateEach(keysWithType, (keyWithType) => {
-        return validateProperty(keyWithType.list, keyWithType.type, token, keyWithType.key)
+        return validateProperty(keyWithType.list, keyWithType.type, node, keyWithType.key)
       })
     }
   ])
 }
 
-function validateMultitype (allowedTypes, token) {
+function validateMultitype (allowedTypes, node) {
   return chainIfValid([
-    () => hasKeys(token, ['childType', 'child']),
-    () => validityResult(_.contains(allowedTypes, token['childType']), 'type-not-allowed'),
-    () => validateProperty(false, token['childType'], token, 'child')
+    () => hasKeys(node, ['childType', 'child']),
+    () => validityResult(_.contains(allowedTypes, node['childType']), 'type-not-allowed'),
+    () => validateProperty(false, node['childType'], node, 'child')
   ])
 }
 
-function validateProperty (isList, propertyType, token, key) {
-  const property = token[key]
+function validateProperty (isList, propertyType, node, key) {
+  const property = node[key]
   return (
     isList
       ? chainIfValid([
@@ -76,12 +76,12 @@ function validateProperty (isList, propertyType, token, key) {
         () => {
           return property.length > 0
             ? validateEach(property, (item, i) => {
-              return withPath(validateToken(item, propertyType), [key, String(i)])
+              return withPath(validateNode(item, propertyType), [key, String(i)])
             })
             : { isValid: true, errorCode: '', errorPath: [] }
         }
       ])
-      : withPath(validateToken(property, propertyType), [key])
+      : withPath(validateNode(property, propertyType), [key])
   )
 }
 

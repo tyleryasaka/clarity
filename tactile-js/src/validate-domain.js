@@ -27,7 +27,6 @@ function proceed (getNexts, context) {
 }
 
 function validateNode (node, nodeType, nodeClass, path, getNexts, context) {
-  console.log('---', nodeType, nodeClass, node)
   if (nodeClass === 'variable') {
     return proceed(getNexts, context)
   } else if (nodeClass === 'primitive') {
@@ -136,7 +135,6 @@ function getExplicitDomain (domainNode, domainArgs = []) {
 }
 
 function domainsAreEqual (domainA, domainB, path) {
-  console.log('*', domainA.domainType, domainB)
   return chainIfValid([
     () => validityResult(domainA.domainType === domainB.domainType, 'value-domain-mismatch', path),
     () => {

@@ -10,7 +10,8 @@ const primitiveValidators = {
   'bool-literal': new RegExp('^(true|false)$'),
   'integer-literal': new RegExp('^\\d+$'),
   'domain-literal': new RegExp('^(string|integer|bool|function)$'),
-  'function-reference': new RegExp('^\\d+$')
+  'function-reference': new RegExp('^\\d+$'),
+  'variable-reference': new RegExp('^\\d+$')
 }
 
 const multiTypes = {

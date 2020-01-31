@@ -9,11 +9,15 @@ function validityResult (isValid, errorCode, errorPath) {
 }
 
 function chainIfValid (fnList) {
-  const result = _.first(fnList)()
-  if (fnList.length > 1) {
-    return result.isValid ? chainIfValid(_.rest(fnList)) : result
+  if (fnList.length === 0) {
+    return validityResult(true, '', [])
   } else {
-    return result
+    const result = _.first(fnList)()
+    if (fnList.length > 1) {
+      return result.isValid ? chainIfValid(_.rest(fnList)) : result
+    } else {
+      return result
+    }
   }
 }
 

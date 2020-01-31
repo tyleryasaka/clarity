@@ -6,6 +6,12 @@ const {
   nodeValidators
 } = require('./node-definitions')
 
+function processProgram (program) {
+  const { nodeObject, path, getChildren } = processNode(program, 'program')
+  const programObject = newNodeObject(program, 'program', 'program')
+  return { programObject, nodeObject, path, getChildren }
+}
+
 function processNode (node, nodeType, path = [], variableApplied = false) {
   const keysWithType = nodeValidators[nodeType]
   const regex = primitiveValidators[nodeType]
@@ -21,38 +27,50 @@ function processNode (node, nodeType, path = [], variableApplied = false) {
   }
 }
 
-function processPrimitive (node, nodeType, path) {
+function newNodeObject (node, nodeType, semanticNodeType, variableRef) {
+  const isSemantic = nodeType === semanticNodeType
+  const isVariable = variableRef !== undefined
+  const isPrimitive = _.includes(_.keys(primitiveValidators), nodeType)
   return {
     node,
-    nodeClass: 'primitive',
-    path,
-    nodeType
+    nodeType,
+    semanticNodeType,
+    variableRef,
+    isSemantic,
+    isVariable,
+    isPrimitive
   }
 }
 
-function processVariable (node, nodeType, path) {
+function processPrimitive (node, nodeType, path) {
   return {
-    node,
-    nodeClass: 'variable',
-    nodeType,
+    nodeObject: newNodeObject(node, nodeType, nodeType),
     path,
-    getNexts: [() => {
-      if (node.variable === 'true') {
-        return processNode(node.child, 'integer-literal', path, true)
-      } else {
-        return processNode(node.child, nodeType, path, true)
-      }
-    }]
+    getChildren: []
+  }
+}
+
+function processVariable (node, semanticNodeType, path) {
+  const getChildren = [() => {
+    if (node.variable === 'true') {
+      return processNode(node.child, 'variable-reference', path, true)
+    } else {
+      return processNode(node.child, semanticNodeType, path, true)
+    }
+  }]
+  return {
+    nodeObject: newNodeObject(node, 'variable', semanticNodeType),
+    path,
+    getChildren
   }
 }
 
 function processMultitype (node, nodeType, path, allowedTypes) {
+  const getChildren = processProperty(false, node['childType'], node, 'child', path)
   return {
-    node,
-    nodeClass: 'multitype',
-    nodeType,
+    nodeObject: newNodeObject(node, 'multitype', nodeType),
     path,
-    getNexts: processProperty(false, node['childType'], node, 'child', path)
+    getChildren
   }
 }
 
@@ -68,36 +86,46 @@ function processProperty (isList, propertyType, node, key, path) {
 }
 
 function processObj (node, nodeType, path, keysWithType) {
+  const getChildren = _.flatten(keysWithType.map(keyWithType => {
+    return processProperty(keyWithType.list, keyWithType.type, node, keyWithType.key, path)
+  }))
   return {
-    node,
-    nodeClass: 'object',
-    nodeType,
+    nodeObject: newNodeObject(node, nodeType, nodeType),
     path,
-    getNexts: _.flatten(keysWithType.map(keyWithType => {
-      return processProperty(keyWithType.list, keyWithType.type, node, keyWithType.key, path)
-    }))
+    getChildren
   }
 }
 
-function getTrueNode (node, nodeType, variableApplied = false, isVariable = false) {
-  const multitypes = multiTypes[nodeType]
-  const isVariableType = _.includes(variableTypes, nodeType)
+// returns: nodeObject
+function getNodeProperty (nodeObject, key) {
+  const property = nodeObject.node[key]
+  const keyReference = _.find(nodeValidators[nodeObject.nodeType], v => v.key === key)
+  const semanticNodeType = keyReference.type
+  const isList = keyReference.list
+  return isList
+    ? property.map(item => getNodePropertyHelp(item, semanticNodeType))
+    : getNodePropertyHelp(property, semanticNodeType)
+}
+
+function getNodePropertyHelp (node, semanticNodeType, variableApplied = false, isVariable = false) {
+  const multitypes = multiTypes[semanticNodeType]
+  const isVariableType = _.includes(variableTypes, semanticNodeType)
   if (isVariableType && !variableApplied) {
     // need to determine whether this is variable node
-    return getTrueNode(node.child, nodeType, true, node.variable === 'true')
-  } else if (isVariableType && variableApplied && isVariable) {
+    return getNodePropertyHelp(node.child, semanticNodeType, true, node.variable === 'true')
+  } else if (getNodePropertyHelp && variableApplied && isVariable) {
     // this is a variable node
-    return { isVariable, node, nodeType }
+    return newNodeObject(node, 'variable-reference', semanticNodeType, node)
   } else if (multitypes !== undefined) {
     // not variable; multitype, get the child node with specific type
-    return { isVariable: false, node: node.child, nodeType: node.childType }
+    return newNodeObject(node.child, node.childType, node.childType)
   } else {
     // plain old non-variable non-multitype node
-    return { isVariable, node, nodeType }
+    return newNodeObject(node, semanticNodeType, semanticNodeType)
   }
 }
 
 module.exports = {
-  processNode,
-  getTrueNode
+  processProgram,
+  getNodeProperty
 }

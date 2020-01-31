@@ -10,11 +10,11 @@ const {
   nodeValidators
 } = require('./node-definitions')
 const {
-  processNode
+  processProgram
 } = require('./process-tree')
 
 function validateSyntax (program) {
-  const { node, nodeType, nodeClass, path, getNexts } = processNode(program, 'program')
+  const { node, nodeType, nodeClass, path, getNexts } = processProgram(program)
   return validateNode(node, nodeType, nodeClass, path, getNexts)
 }
 

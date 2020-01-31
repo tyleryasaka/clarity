@@ -7,144 +7,126 @@ const {
   validateEach
 } = require('./utils')
 const {
-  processNode,
-  getTrueNode
+  processProgram,
+  getNodeProperty
 } = require('./process-tree')
 
+// returns: validity result
 function validateDomain (program) {
-  const { node, nodeType, nodeClass, path, getNexts } = processNode(program, 'program')
-  const context = { program, valueParams: [] }
-  return validateNode(node, nodeType, nodeClass, path, getNexts, context)
+  const { programObject, nodeObject, path, getChildren } = processProgram(program)
+  const context = { program: programObject, valueParams: [] }
+  return validateNode(nodeObject, path, getChildren, context)
 }
 
-function proceed (getNexts, context) {
-  return chainIfValid(getNexts.map(next => {
+// returns: validity result
+function proceed (getChildren, context) {
+  return chainIfValid(getChildren.map(getChild => {
     return () => {
-      const { node, nodeType, nodeClass, path, getNexts } = next()
-      return validateNode(node, nodeType, nodeClass, path, getNexts, context)
+      const child = getChild()
+      return validateNode(child.nodeObject, child.path, child.getChildren, context)
     }
   }))
 }
 
-function validateNode (node, nodeType, nodeClass, path, getNexts, context) {
-  if (nodeClass === 'variable') {
-    return proceed(getNexts, context)
-  } else if (nodeClass === 'primitive') {
-    // primitive node type
-    return validityResult(true, '', path)
-  } else if (nodeType === 'application') {
-    // application node
-    const functionDef = getFunctionDefinition(node, context)
-    const domainParamsCount = functionDef.isVariable
-      ? getTrueNode(functionDef.param.domain).node.child.child.domainParamsCount
-      : functionDef.node.domainParams.length
-    const valueParamDomains = functionDef.isVariable
-      ? getTrueNode(functionDef.param.domain).node.child.child.valueParamDomains
-      : functionDef.node.valueParams.map(param => param.domain)
-    return chainIfValid([
-      () => validityResult(node.domainArgs.length === Number(domainParamsCount), 'domain-arg-mismatch.count', path),
-      () => validityResult(node.valueArgs.length === valueParamDomains.length, 'value-arg-mismatch.count', path),
-      () => validateEach(node.valueArgs, (arg, i) => {
-        return valueMatchesDomain(arg, valueParamDomains[i], context, path, node.domainArgs)
-      }),
-      () => proceed(getNexts, context)
-    ])
-  } else if (nodeType === 'function') {
-    const newContext = _.clone(context)
-    // Need to pass down function valueParams as context
-    newContext.valueParams = node.valueParams
-    return chainIfValid([
-      () => valueMatchesDomain(node.body, node.domain, newContext, path),
-      () => proceed(getNexts, newContext)
-    ])
-  } else if (nodeType === 'ifelse') {
-    return chainIfValid([
-      () => valueMatchesDomain(node.if, node.domain, context, path),
-      () => valueMatchesDomain(node.else, node.domain, context, path),
-      () => valueIsBoolean(node.condition, context, path),
-      () => proceed(getNexts, context)
-    ])
+// returns: validity result
+function validateNode (nodeObject, path, getChildren, context) {
+  if (nodeObject.isPrimitive || nodeObject.isVariable || !nodeObject.isSemantic) {
+    return proceed(getChildren, context)
+  } else if (nodeObject.nodeType === 'application') {
+    return validateApplicationNode(nodeObject, path, getChildren, context)
+  } else if (nodeObject.nodeType === 'function') {
+    return validateFunctionNode(nodeObject, path, getChildren, context)
+  } else if (nodeObject.nodeType === 'ifelse') {
+    return validateIfelseNode(nodeObject, path, getChildren, context)
   } else {
-    return proceed(getNexts, context)
+    return proceed(getChildren, context)
   }
 }
 
-function valueMatchesDomain (value, expectedDomain, context, path, domainArgs = []) {
-  const actualDomain = getDomainOfValue(value, context)
-  const expectedDomainFormat = getExplicitDomain(expectedDomain, domainArgs)
-  return domainsAreEqual(actualDomain, expectedDomainFormat, path)
+// returns: validity result
+function validateApplicationNode (nodeObject, path, getChildren, context) {
+  // match application with function it tries to call
+  const domainArgs = getNodeProperty(nodeObject, 'domainArgs')
+  const valueArgs = getNodeProperty(nodeObject, 'valueArgs')
+  const functionSignature = getReferencedFunctionSignature(nodeObject, context, domainArgs)
+  const domainParamsCount = Number(functionSignature.signature.domainParamsCount)
+  const valueParamDomains = functionSignature.signature.valueParamDomains
+  return chainIfValid([
+    // 1. application domainArgs count matches function domainParams count
+    () => validityResult(domainArgs.length === domainParamsCount, 'domain-arg-mismatch.count', path),
+    // 2. application valueArgs count matches function valueParams count
+    () => validityResult(valueArgs.length === valueParamDomains.length, 'value-arg-mismatch.count', path),
+    // 3. valueArg domains match valueParam domains
+    () => validateEach(valueArgs, (arg, i) => {
+      return valueMatchesDomain(arg, valueParamDomains[i], context, path)
+    }),
+    () => proceed(getChildren, context)
+  ])
 }
 
+// returns: validity result
+function validateFunctionNode (nodeObject, path, getChildren, context) {
+  // Need to pass down function valueParams as context
+  const newContext = _.clone(context)
+  newContext.valueParams = getNodeProperty(nodeObject, 'valueParams')
+  const body = getNodeProperty(nodeObject, 'body')
+  const domainComparisonObj = getDomainComparisonObject(getNodeProperty(nodeObject, 'domain'))
+  return chainIfValid([
+    // Function body and specified domain should match
+    () => valueMatchesDomain(body, domainComparisonObj, newContext, path),
+    () => proceed(getChildren, newContext)
+  ])
+}
+
+// returns: validity result
+function validateIfelseNode (nodeObject, path, getChildren, context) {
+  const ifObj = getNodeProperty(nodeObject, 'if')
+  const elseObj = getNodeProperty(nodeObject, 'else')
+  const domainComparisonObj = getDomainComparisonObject(getNodeProperty(nodeObject, 'domain'))
+  return chainIfValid([
+    // 1. "if" branch should match specified domain
+    () => valueMatchesDomain(ifObj, domainComparisonObj, context, path),
+    // 2. "else" branch should match specified domain
+    () => valueMatchesDomain(elseObj, domainComparisonObj, context, path),
+    // 2. "condition" should be boolean
+    () => valueIsBoolean(getNodeProperty(nodeObject, 'condition'), context, path),
+    () => proceed(getChildren, context)
+  ])
+}
+
+// returns: validity result
+function valueMatchesDomain (value, expectedDomainComparisonObj, context, path) {
+  const actualDomain = getDomainOfValue(value, context)
+  return domainsAreEqual(actualDomain, expectedDomainComparisonObj, path)
+}
+
+// returns: validity result
 function valueIsBoolean (value, context, path) {
   const actualDomain = getDomainOfValue(value, context)
   const expectedDomain = { domainType: 'bool' }
   return domainsAreEqual(actualDomain, expectedDomain, path)
 }
 
-function getResolvedNode (node, nodeType, params) {
-  const trueNode = getTrueNode(node, nodeType)
-  const isVariable = trueNode.isVariable
-  return isVariable
-    ? { isVariable, param: resolvedParam(trueNode.node, params) }
-    : { isVariable, node: trueNode.node, nodeType: trueNode.nodeType }
-}
-
-function resolvedParam (node, params) {
-  // TODO: need to verify (not here, but somewhere) that all referenced params exist
-  const index = Number(node)
-  return params[index]
-}
-
-function getDomainOfValue (value, context) {
-  const trueNode = getResolvedNode(value, 'value', context.valueParams)
-  if (trueNode.isVariable) {
-    return getExplicitDomain(trueNode.param.domain)
-  } else if (trueNode.nodeType === 'application') {
-    const functionDef = getFunctionDefinition(trueNode.node, context)
-    return functionDef.isVariable
-      ? getExplicitDomain(getExplicitDomain(getTrueNode(functionDef.param.domain).node).domainType.domain)
-      : getExplicitDomain(functionDef.node.domain, trueNode.node.domainArgs)
-  } else if (trueNode.nodeType === 'ifelse') {
-    return getExplicitDomain(trueNode.node.domain)
-  } else if (trueNode.nodeType === 'function') {
-    return getFunctionSignature(trueNode)
-  } else if (trueNode.nodeType === 'integer-literal') {
-    return { domainType: 'integer' }
-  } else if (trueNode.nodeType === 'string-literal') {
-    return { domainType: 'string' }
-  } else if (trueNode.nodeType === 'bool-literal') {
-    return { domainType: 'bool' }
-  }
-}
-
-function getExplicitDomain (domainNode, domainArgs = []) {
-  const trueNode = getTrueNode(domainNode, 'domain')
-  const appliedNode = (domainArgs.length > 0 && trueNode.isVariable)
-    // if domainArgs is non-empty, this is applied function
-    // In this case, variable is from referenced functions rather than current context
-    // and we need to substitute the passed in domainArgs to get domain in current context
-    ? getTrueNode(domainArgs[Number(trueNode.node)], 'domain')
-    : trueNode
-  if (appliedNode.isVariable) {
-    return { domainType: 'variable', param: appliedNode.node }
-  } else if (appliedNode.nodeType === 'domain-literal') {
-    return { domainType: appliedNode.node }
-  } else if (appliedNode.nodeType === 'function-signature') {
-    return { domainType: appliedNode.node }
-  }
-}
-
+// returns: validity result
 function domainsAreEqual (domainA, domainB, path) {
   return chainIfValid([
+    // 1. Domain types should match, at a minimum
     () => validityResult(domainA.domainType === domainB.domainType, 'value-domain-mismatch', path),
     () => {
       if (domainA.domainType === 'variable') {
+        // 2. Variable domains should "vary together" - that is, they should be populated by the same domain param
+        // Otherwise, they could get set to different domains and cause runtime domain mismatch
         return validityResult(domainA.param === domainB.param, 'value-domain-mismatch.variable-param', path)
       } else if (domainA.domainType === 'function') {
+        // 3. Perform additional validation for functions
         return chainIfValid([
+          // a. Functions return values should have the same domain
           () => domainsAreEqual(domainA.signature.domain, domainB.signature.domain, path),
+          // b. The number of domain params should match
           () => validityResult(domainA.signature.domainParamsCount === domainB.signature.domainParamsCount, 'function-signature-mismatch.domain-param-count', path),
+          // c. The number of value params should match
           () => validityResult(domainA.signature.valueParamDomains.length === domainB.signature.valueParamDomains.length, 'function-signature-mismatch.value-param-count', path),
+          // d. Each value param should have the same domain
           () => validateEach(domainA.signature.valueParamDomains, (item, i) => {
             return domainsAreEqual(domainA.signature.valueParamDomains[i], domainB.signature.valueParamDomains[i], path)
           })
@@ -156,25 +138,98 @@ function domainsAreEqual (domainA, domainB, path) {
   ])
 }
 
-function getFunctionSignature (trueNode) {
+// returns: node object
+function getResolvedVariable (nodeObject, params) {
+  return params[Number(nodeObject.variableRef)]
+}
+
+// returns: domain object for domain comparison
+function getDomainOfValue (nodeObject, context) {
+  if (nodeObject.isVariable) {
+    const param = getResolvedVariable(nodeObject, context.valueParams)
+    return getDomainComparisonObject(getNodeProperty(param, 'domain'))
+  } else if (nodeObject.nodeType === 'application') {
+    const domainArgs = getNodeProperty(nodeObject, 'domainArgs')
+    const functionSignature = getReferencedFunctionSignature(nodeObject, context, domainArgs)
+    return functionSignature.signature.domain
+  } else if (nodeObject.nodeType === 'ifelse') {
+    return getDomainComparisonObject(getNodeProperty(nodeObject, 'domain'))
+  } else if (nodeObject.nodeType === 'function') {
+    return getFunctionSignatureFromDefinition(nodeObject)
+  } else if (nodeObject.nodeType === 'integer-literal') {
+    return { domainType: 'integer' }
+  } else if (nodeObject.nodeType === 'string-literal') {
+    return { domainType: 'string' }
+  } else if (nodeObject.nodeType === 'bool-literal') {
+    return { domainType: 'bool' }
+  }
+}
+
+// returns: domain object for domain comparison
+function getDomainComparisonObject (domainNode, domainArgs = []) {
+  const appliedNode = (domainArgs.length > 0 && domainNode.isVariable)
+    // if domainArgs is non-empty, this is applied function
+    // In this case, variable is from referenced functions rather than current context
+    // and we need to substitute the passed in domainArgs to get domain in current context
+    ? domainArgs[Number(domainNode.variableRef)]
+    : domainNode
+  if (appliedNode.isVariable) {
+    return { domainType: 'variable', paramIndex: appliedNode.variableRef }
+  } else if (appliedNode.nodeType === 'domain-literal') {
+    return { domainType: appliedNode.node }
+  } else if (appliedNode.nodeType === 'function-signature') {
+    return getFunctionSignatureFromDomain(appliedNode)
+  }
+}
+
+// returns: function signature (domain object) for domain comparison
+function newComparisonSignature (domain, domainParamsCount, valueParamDomains, domainArgs = []) {
   return {
     domainType: 'function',
     signature: {
-      domain: getExplicitDomain(trueNode.node.domain),
-      domainParamsCount: trueNode.node.domainParamsCount,
-      valueParamDomains: trueNode.node.valueParamDomains.map(item => {
-        return getExplicitDomain(item)
+      domain: getDomainComparisonObject(domain, domainArgs),
+      domainParamsCount: domainParamsCount,
+      valueParamDomains: valueParamDomains.map(valueParamDomain => {
+        return getDomainComparisonObject(valueParamDomain, domainArgs)
       })
     }
   }
 }
 
-function getFunctionDefinition (application, context) {
+// returns: function signature (domain object) for domain comparison
+function getFunctionSignatureFromDefinition (functionDef, domainArgs) {
+  // construct function signature from a function definition
+  const functionDomain = getNodeProperty(functionDef, 'domain')
+  const domainParamsCount = getNodeProperty(functionDef, 'domainParams').length
+  const valueParams = getNodeProperty(functionDef, 'valueParams')
+  const valueParamDomains = valueParams.map(valueParam => getNodeProperty(valueParam, 'domain'))
+  return newComparisonSignature(functionDomain, domainParamsCount, valueParamDomains, domainArgs)
+}
+
+// returns: function signature (domain object) for domain comparison
+function getFunctionSignatureFromDomain (domainObject) {
+  // construct a formatted function signature (for domain comparison) from a syntactic domain object
+  const signatureDomain = getNodeProperty(domainObject, 'domain')
+  const signatureDomainParamsCount = getNodeProperty(domainObject, 'domainParamsCount').node
+  const signatureValueParamDomains = getNodeProperty(domainObject, 'valueParamDomains')
+  return newComparisonSignature(signatureDomain, signatureDomainParamsCount, signatureValueParamDomains)
+}
+
+// returns: function signature (domain object) for domain comparison
+function getReferencedFunctionSignature (applicationNodeObject, context, domainArgs) {
+  // returns: function signature for domain comparison
   // TODO function definitions should not be variable
-  const functionNode = getResolvedNode(application.function, 'function-reference', context.valueParams)
-  return functionNode.isVariable
-    ? functionNode
-    : getResolvedNode(context.program.functions[Number(functionNode.node)].function, 'function', context.valueParams)
+  const functionRef = getNodeProperty(applicationNodeObject, 'function')
+  if (functionRef.isVariable) {
+    const param = getResolvedVariable(functionRef, context.valueParams)
+    const paramDomain = getNodeProperty(param, 'domain')
+    return getFunctionSignatureFromDomain(paramDomain)
+  } else {
+    const functionIndex = Number(functionRef.node)
+    const programFunctions = getNodeProperty(context.program, 'functions')
+    const functionDefinition = getNodeProperty(programFunctions[functionIndex], 'function')
+    return getFunctionSignatureFromDefinition(functionDefinition, domainArgs)
+  }
 }
 
 module.exports = {

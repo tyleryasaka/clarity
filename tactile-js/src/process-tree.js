@@ -38,7 +38,7 @@ function processVariable (node, nodeType, path) {
     path,
     getNexts: [() => {
       if (node.variable === 'true') {
-        return processNode(node.child, 'integer-literal', path)
+        return processNode(node.child, 'integer-literal', path, true)
       } else {
         return processNode(node.child, nodeType, path, true)
       }
@@ -79,14 +79,12 @@ function processObj (node, nodeType, path, keysWithType) {
   }
 }
 
-function getTrueNode (node, nodeType, variableApplied, isVariable) {
+function getTrueNode (node, nodeType, variableApplied = false, isVariable = false) {
   const multitypes = multiTypes[nodeType]
   const isVariableType = _.includes(variableTypes, nodeType)
   if (isVariableType && !variableApplied) {
     // need to determine whether this is variable node
-    return node.variable === 'true'
-      ? getTrueNode(node.child, nodeType, true, true)
-      : getTrueNode(undefined, nodeType, true, false)
+    return getTrueNode(node.child, nodeType, true, node.variable === 'true')
   } else if (isVariableType && variableApplied && isVariable) {
     // this is a variable node
     return { isVariable, node, nodeType }

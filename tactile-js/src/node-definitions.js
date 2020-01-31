@@ -1,14 +1,16 @@
 const variableTypes = [
   'function',
   'domain',
-  'value'
+  'value',
+  'function-reference'
 ]
 
 const primitiveValidators = {
   'string-literal': new RegExp('.*'),
   'bool-literal': new RegExp('^(true|false)$'),
   'integer-literal': new RegExp('^\\d+$'),
-  'domain-literal': new RegExp('^(string|integer|bool|function)$')
+  'domain-literal': new RegExp('^(string|integer|bool|function)$'),
+  'function-reference': new RegExp('^\\d+$')
 }
 
 const multiTypes = {
@@ -117,7 +119,7 @@ const nodeValidators = {
   application: [
     {
       key: 'function',
-      type: 'string-literal',
+      type: 'function-reference',
       list: false
     },
     {

@@ -4,7 +4,7 @@ function validityResult (isValid, errorCode, errorPath) {
   return {
     isValid,
     errorCode: isValid ? '' : errorCode,
-    errorPath
+    errorPath: isValid ? [] : errorPath
   }
 }
 

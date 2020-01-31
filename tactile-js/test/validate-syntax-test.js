@@ -9,6 +9,7 @@ const validateSyntax = require('../src/validate-syntax')
 describe('validateSyntax', function () {
   it('should validate a valid program without errors', function () {
     const result = validateSyntax(JSON.parse(programJSON))
-    assert.strictEqual(result.isValid, true)
+    assert.strictEqual(result.errorCode, '')
+    assert.ok(result.isValid)
   })
 })

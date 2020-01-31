@@ -14,60 +14,60 @@ const {
 } = require('./process-tree')
 
 function validateSyntax (program) {
-  const { node, nodeType, nodeClass, path, getNexts } = processProgram(program)
-  return validateNode(node, nodeType, nodeClass, path, getNexts)
+  const { nodeObject, path, getChildren } = processProgram(program)
+  return validateNode(nodeObject, path, getChildren)
 }
 
-function validateNode (node, nodeType, nodeClass, path, getNexts) {
-  const allowedTypes = multiTypes[nodeType]
-  const keysWithType = nodeValidators[nodeType]
+function validateNode (nodeObject, path, getChildren) {
+  const allowedTypes = multiTypes[nodeObject.semanticNodeType]
+  const keysWithType = nodeValidators[nodeObject.nodeType]
   const proceed = () => {
-    return chainIfValid(getNexts.map(next => {
+    return chainIfValid(getChildren.map(getChild => {
       return () => {
-        const { node, nodeType, nodeClass, path, getNexts } = next()
-        return validateNode(node, nodeType, nodeClass, path, getNexts)
+        const { nodeObject, path, getChildren } = getChild()
+        return validateNode(nodeObject, path, getChildren)
       }
     }))
   }
-  if (nodeClass === 'primitive') {
+  if (nodeObject.isPrimitive) {
     // primitive node type
-    const regex = primitiveValidators[nodeType]
-    return validityResult(regex.test(node), 'invalid-primitive', path)
-  } else if (nodeClass === 'variable') {
+    const regex = primitiveValidators[nodeObject.nodeType]
+    return validityResult(regex.test(nodeObject.node), 'invalid-primitive', path)
+  } else if (nodeObject.nodeType === 'variable') {
     // variable node type
     return chainIfValid([
-      () => hasKeys(node, ['variable', 'child'], path),
+      () => hasKeys(nodeObject.node, ['variable', 'child'], path),
       proceed
     ])
-  } else if (allowedTypes !== undefined) {
+  } else if (nodeObject.nodeType === 'multitype') {
     // multitype node type
     return chainIfValid([
-      () => hasKeys(node, ['childType', 'child'], path),
-      () => validityResult(_.contains(allowedTypes, node['childType']), 'type-not-allowed', path),
+      () => hasKeys(nodeObject.node, ['childType', 'child'], path),
+      () => validityResult(_.contains(allowedTypes, nodeObject.node.childType), 'type-not-allowed', path),
       proceed
     ])
   } else {
     // object node type
     return chainIfValid([
-      () => validateObj(keysWithType, node, path),
+      () => validateObj(keysWithType, nodeObject, path),
       proceed
     ])
   }
 }
 
-function validateObj (keysWithType, node, path) {
+function validateObj (keysWithType, nodeObject, path) {
   return chainIfValid([
-    () => hasKeys(node, _.map(keysWithType, kWT => kWT.key), path),
+    () => hasKeys(nodeObject.node, _.map(keysWithType, kWT => kWT.key), path),
     () => {
       return validateEach(keysWithType, (keyWithType) => {
-        return validateProperty(keyWithType.list, node, keyWithType.key, path)
+        return validateProperty(keyWithType.list, nodeObject, keyWithType.key, path)
       })
     }
   ])
 }
 
-function validateProperty (isList, node, key, path) {
-  const property = node[key]
+function validateProperty (isList, nodeObject, key, path) {
+  const property = nodeObject.node[key]
   return isList
     ? validityResult(Array.isArray(property), 'invalid-list', path)
     : validityResult(true, '', path)

@@ -16,12 +16,12 @@ function processNode (node, nodeType, path = [], variableApplied = false) {
   const keysWithType = nodeValidators[nodeType]
   const regex = primitiveValidators[nodeType]
   const allowedTypes = multiTypes[nodeType]
-  if (regex !== undefined) {
-    return processPrimitive(node, nodeType, path)
-  } else if (!variableApplied && _.includes(variableTypes, nodeType)) {
+  if (!variableApplied && _.includes(variableTypes, nodeType)) {
     return processVariable(node, nodeType, path)
   } else if (allowedTypes !== undefined) {
     return processMultitype(node, nodeType, path, allowedTypes)
+  } else if (regex !== undefined) {
+    return processPrimitive(node, nodeType, path)
   } else {
     return processObj(node, nodeType, path, keysWithType)
   }

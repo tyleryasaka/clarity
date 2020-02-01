@@ -10,12 +10,13 @@ const primitiveValidators = {
   'integer-literal': new RegExp('^\\d+$'),
   'domain-literal': new RegExp('^(string|integer|bool|function)$'),
   'function-reference': new RegExp('^\\d+$'),
-  'variable-reference': new RegExp('^\\d+$')
+  'variable-reference': new RegExp('^\\d+$'),
+  'nothing': new RegExp('^$')
 }
 
 const multiTypes = {
-  value: ['application', 'ifelse', 'function', 'integer-literal', 'string-literal', 'bool-literal'],
-  domain: ['domain-literal', 'function-signature']
+  value: ['application', 'ifelse', 'function', 'opt-getter', 'integer-literal', 'string-literal', 'bool-literal', 'nothing'],
+  domain: ['domain-literal', 'function-signature', 'opt-domain']
 }
 
 const nodeValidators = {
@@ -139,6 +140,30 @@ const nodeValidators = {
     },
     {
       key: 'else',
+      type: 'value',
+      list: false
+    }
+  ],
+  'opt-domain': [
+    {
+      key: 'domain',
+      type: 'domain',
+      list: false
+    }
+  ],
+  'opt-getter': [
+    {
+      key: 'domain',
+      type: 'domain',
+      list: false
+    },
+    {
+      key: 'value',
+      type: 'value',
+      list: false
+    },
+    {
+      key: 'fallback',
       type: 'value',
       list: false
     }

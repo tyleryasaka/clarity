@@ -1,0 +1,63 @@
+{
+  "functions": [
+    {
+      "name": "hello world",
+      "description": "",
+      "domainParams": [],
+      "valueParams": [
+        {
+          "name": "my optional value",
+          "description": "",
+          "domain": {
+            "variable": "false",
+            "child": {
+              "childType": "opt-domain",
+              "child": {
+                "domain": {
+                  "variable": "false",
+                  "child": {
+                    "childType": "domain-literal",
+                    "child": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "domain": {
+        "variable": "false",
+        "child": {
+          "childType": "domain-literal",
+          "child": "string"
+        }
+      },
+      "body": {
+        "variable": "false",
+        "child": {
+          "childType": "opt-getter",
+          "child": {
+            "domain": {
+              "variable": "false",
+              "child": {
+                "childType": "domain-literal",
+                "child": "string"
+              }
+            },
+            "value": {
+              "variable": "true",
+              "child": "0"
+            },
+            "fallback": {
+              "variable": "false",
+              "child": {
+                "childType": "string-literal",
+                "child": "hello"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

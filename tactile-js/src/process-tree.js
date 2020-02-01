@@ -76,7 +76,7 @@ function processMultitype (node, nodeType, path, allowedTypes) {
 
 function processProperty (isList, propertyType, node, key, path) {
   const property = node[key]
-  return isList
+  return (isList && _.isArray(property))
     ? property.map((item, i) => {
       return () => {
         return processNode(item, propertyType, _.union(path, [key, String(i)]))

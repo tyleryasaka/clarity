@@ -5,7 +5,7 @@ const {
   validityResult,
   chainIfValid,
   validateEach
-} = require('./utils')
+} = require('./validation-utils')
 const {
   processProgram,
   getNodeProperty

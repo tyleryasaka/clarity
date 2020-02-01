@@ -6,7 +6,7 @@ const validateDomain = require('./validate-domain')
 const {
   validityResult,
   chainIfValid
-} = require('./utils')
+} = require('./validation-utils')
 
 function validate (program) {
   return chainIfValid([

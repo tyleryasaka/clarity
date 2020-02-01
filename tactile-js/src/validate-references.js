@@ -4,7 +4,7 @@ const _ = require('underscore')
 const {
   validityResult,
   chainIfValid
-} = require('./utils')
+} = require('./validation-utils')
 const {
   processProgram,
   getNodeProperty

@@ -38,6 +38,8 @@ function validateNode (nodeObject, path, getChildren, context) {
     return validateFunctionNode(nodeObject, path, getChildren, context)
   } else if (nodeObject.nodeType === 'ifelse') {
     return validateIfelseNode(nodeObject, path, getChildren, context)
+  } else if (nodeObject.nodeType === 'opt-getter') {
+    return validateOptGetterNode(nodeObject, path, getChildren, context)
   } else {
     return proceed(getChildren, context)
   }
@@ -88,47 +90,73 @@ function validateIfelseNode (nodeObject, path, getChildren, context) {
     () => valueMatchesDomain(ifObj, domainComparisonObj, context, path),
     // 2. "else" branch should match specified domain
     () => valueMatchesDomain(elseObj, domainComparisonObj, context, path),
-    // 2. "condition" should be boolean
+    // 3. "condition" should be boolean
     () => valueIsBoolean(getNodeProperty(nodeObject, 'condition'), context, path),
     () => proceed(getChildren, context)
   ])
 }
 
 // returns: validity result
+function validateOptGetterNode (nodeObject, path, getChildren, context) {
+  const valueObj = getNodeProperty(nodeObject, 'value')
+  const fallbackObj = getNodeProperty(nodeObject, 'fallback')
+  const optDomain = getDomainComparisonObject(nodeObject)
+  const innerDomain = getDomainComparisonObject(getNodeProperty(nodeObject, 'domain'))
+  return chainIfValid([
+    // 1. value domain should match opt (either opt, nothing, or inner domain)
+    () => valueMatchesDomain(valueObj, optDomain, context, path),
+    // 2. fallback domain should match specified domain
+    () => valueMatchesDomain(fallbackObj, innerDomain, context, path)
+  ])
+}
+
+// returns: validity result
 function valueMatchesDomain (value, expectedDomainComparisonObj, context, path) {
   const actualDomain = getDomainOfValue(value, context)
-  return domainsAreEqual(actualDomain, expectedDomainComparisonObj, path)
+  return domainsMatch(actualDomain, expectedDomainComparisonObj, path)
 }
 
 // returns: validity result
 function valueIsBoolean (value, context, path) {
   const actualDomain = getDomainOfValue(value, context)
   const expectedDomain = { domainType: 'bool' }
-  return domainsAreEqual(actualDomain, expectedDomain, path)
+  return domainsMatch(actualDomain, expectedDomain, path)
 }
 
 // returns: validity result
-function domainsAreEqual (domainA, domainB, path) {
+function domainsMatch (actualDomain, expectedDomain, path) {
   return chainIfValid([
     // 1. Domain types should match, at a minimum
-    () => validityResult(domainA.domainType === domainB.domainType, 'value-domain-mismatch', path),
     () => {
-      if (domainA.domainType === 'variable') {
+      if ((expectedDomain.domainType === 'opt')) {
+        // a. Only exception is when expected domain is opt: actual domain can be opt, nothing, or inner domain
+        const expectedInnerDomain = getDomainComparisonObject(expectedDomain.innerDomain)
+        const matchesAsOpt = (actualDomain.domainType === 'opt') && domainsMatch(getDomainComparisonObject(actualDomain.innerDomain), expectedInnerDomain, path).isValid
+        const matchesAsNothing = actualDomain.domainType === 'nothing'
+        const matchesInnerDomain = domainsMatch(actualDomain, expectedInnerDomain, path).isValid
+        return validityResult(matchesAsOpt || matchesAsNothing || matchesInnerDomain, 'value-domain-mismatch', path)
+      } else {
+        // b. otherwise require domains types match
+        return validityResult(actualDomain.domainType === expectedDomain.domainType, 'value-domain-mismatch', path)
+      }
+    },
+    () => {
+      if (actualDomain.domainType === 'variable') {
         // 2. Variable domains should "vary together" - that is, they should be populated by the same domain param
         // Otherwise, they could get set to different domains and cause runtime domain mismatch
-        return validityResult(domainA.param === domainB.param, 'value-domain-mismatch.variable-param', path)
-      } else if (domainA.domainType === 'function') {
-        // 3. Perform additional validation for functions
+        return validityResult(actualDomain.param === expectedDomain.param, 'value-domain-mismatch.variable-param', path)
+      } else if (actualDomain.domainType === 'function') {
+        // 4. Perform additional validation for functions
         return chainIfValid([
           // a. Functions return values should have the same domain
-          () => domainsAreEqual(domainA.signature.domain, domainB.signature.domain, path),
+          () => domainsMatch(actualDomain.signature.domain, expectedDomain.signature.domain, path),
           // b. The number of domain params should match
-          () => validityResult(domainA.signature.domainParamsCount === domainB.signature.domainParamsCount, 'function-signature-mismatch.domain-param-count', path),
+          () => validityResult(actualDomain.signature.domainParamsCount === expectedDomain.signature.domainParamsCount, 'function-signature-mismatch.domain-param-count', path),
           // c. The number of value params should match
-          () => validityResult(domainA.signature.valueParamDomains.length === domainB.signature.valueParamDomains.length, 'function-signature-mismatch.value-param-count', path),
+          () => validityResult(actualDomain.signature.valueParamDomains.length === expectedDomain.signature.valueParamDomains.length, 'function-signature-mismatch.value-param-count', path),
           // d. Each value param should have the same domain
-          () => validateEach(domainA.signature.valueParamDomains, (item, i) => {
-            return domainsAreEqual(domainA.signature.valueParamDomains[i], domainB.signature.valueParamDomains[i], path)
+          () => validateEach(actualDomain.signature.valueParamDomains, (item, i) => {
+            return domainsMatch(actualDomain.signature.valueParamDomains[i], expectedDomain.signature.valueParamDomains[i], path)
           })
         ])
       } else {
@@ -153,6 +181,8 @@ function getDomainOfValue (nodeObject, context) {
     const functionSignature = getReferencedFunctionSignature(nodeObject, context, domainArgs)
     return functionSignature.signature.domain
   } else if (nodeObject.nodeType === 'ifelse') {
+    return getDomainComparisonObject(getNodeProperty(nodeObject, 'domain'))
+  } else if (nodeObject.nodeType === 'opt-getter') {
     return getDomainComparisonObject(getNodeProperty(nodeObject, 'domain'))
   } else if (nodeObject.nodeType === 'function') {
     return getFunctionSignatureFromDefinition(nodeObject)
@@ -179,6 +209,8 @@ function getDomainComparisonObject (domainNode, domainArgs = []) {
     return { domainType: appliedNode.node }
   } else if (appliedNode.nodeType === 'function-signature') {
     return getFunctionSignatureFromDomain(appliedNode)
+  } else if ((appliedNode.nodeType === 'opt-domain') || (appliedNode.nodeType === 'opt-getter')) {
+    return { domainType: 'opt', innerDomain: getNodeProperty(appliedNode, 'domain') }
   }
 }
 

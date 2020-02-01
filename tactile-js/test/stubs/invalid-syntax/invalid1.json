@@ -3,29 +3,26 @@
     {
       "id": "1",
       "function": {
-        "id": "1",
-        "function": {
-          "name": "hello world",
-          "description": "",
-          "domainParams": [],
-          "valueParams": [
-            {
-              "name": "my value",
-              "description": "",
-              "domain": {
-                "variable": "false",
-                "child": "bool"
-              }
+        "name": "hello world",
+        "description": "",
+        "domainParams": [],
+        "valueParams": [
+          {
+            "name": "my value",
+            "description": "",
+            "domain": {
+              "variable": "false",
+              "child": "bool"
             }
-          ],
-          "domain": {
-            "variable": "false",
-            "child": "bool"
-          },
-          "body": {
-            "variable": "true",
-            "child": "0"
           }
+        ],
+        "domain": {
+          "variable": "false",
+          "child": "bool"
+        },
+        "body": {
+          "variable": "true",
+          "child": "0"
         }
       }
     }

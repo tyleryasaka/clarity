@@ -22,20 +22,8 @@ const nodeValidators = {
   program: [
     {
       key: 'functions',
-      type: 'function-definition',
-      list: true
-    }
-  ],
-  'function-definition': [
-    {
-      key: 'id',
-      type: 'string-literal',
-      list: false
-    },
-    {
-      key: 'function',
       type: 'function',
-      list: false
+      list: true
     }
   ],
   function: [

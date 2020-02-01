@@ -226,8 +226,7 @@ function getReferencedFunctionSignature (applicationNodeObject, context, domainA
   } else {
     const functionIndex = Number(functionRef.node)
     const programFunctions = getNodeProperty(context.program, 'functions')
-    const functionDefinition = getNodeProperty(programFunctions[functionIndex], 'function')
-    return getFunctionSignatureFromDefinition(functionDefinition, domainArgs)
+    return getFunctionSignatureFromDefinition(programFunctions[functionIndex], domainArgs)
   }
 }
 

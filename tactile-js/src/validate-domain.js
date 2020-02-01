@@ -232,6 +232,4 @@ function getReferencedFunctionSignature (applicationNodeObject, context, domainA
   }
 }
 
-module.exports = {
-  validateDomain
-}
+module.exports = validateDomain

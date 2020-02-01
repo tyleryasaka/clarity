@@ -1,84 +1,80 @@
 const _ = require('underscore')
-const { validate, requiredProps, oneOf } = require('./validate')
+const {
+  processProgram,
+  getNodeProperty
+} = require('./process-tree')
 
-function evaluate (program, defId, valueArgs = [], alreadyValidated = false) {
-  const programErrors = alreadyValidated ? validate(program) : []
-  if (programErrors.length) {
-    return { errors: programErrors }
+function evaluate (program, functionIndex) {
+  const { programObject } = processProgram(program)
+  const programFunctions = getNodeProperty(programObject, 'functions')
+  if (functionIndex >= programFunctions.length) {
+    return { errorCode: 'nonexistent-function' }
   }
-  const argErrors = validateArgs(valueArgs)
-  if (argErrors.length) {
-    return { errors: argErrors }
+  const functionObject = programFunctions[functionIndex]
+  const domainParams = getNodeProperty(functionObject, 'domainParams')
+  const valueParams = getNodeProperty(functionObject, 'valueParams')
+  if ((domainParams.length > 0) || (valueParams.length > 0)) {
+    return { errorCode: 'nonexecutable-function' }
   }
-  const def = _.find(program.definitions, d => d.id === defId)
-  if (isDynamic(def, valueArgs)) {
-    return { errors: [], dynamic: true }
-  } else {
-    const context = { program, valueArgs }
-    return { dynamic: false, result: evaluateDefinition(def, context) }
-  }
+  const context = { program: programObject, valueArgs: [] }
+  return { errorCode: '', result: evaluateFunction(functionObject, context).node }
 }
 
-function validateArgs (valueArgs) {
-  const context = { errors: [] }
-  valueArgs.forEach(a => {
-    requiredProps(a, ['param', 'value'], context)
-    requiredProps(a.value, ['variable', 'v'], context)
-    requiredProps(a.value.v, ['type', 'literalValue'], context)
-    oneOf(a.value.v.type, ['integer-literal', 'string-literal', 'bool-literal'], context)
-  })
-  return context.errors
+function evaluateFunction (functionObject, context) {
+  return evaluateValue(getNodeProperty(functionObject, 'body'), context)
 }
 
-function isDynamic (def, valueArgs) {
-  const paramIds = def.valueParams.map(p => p.id)
-  const argIds = valueArgs.map(a => a.param)
-  return ((def.domainParams.length > 0) || (def.valueParams.length > 0)) && (_.difference(paramIds, argIds).length > 0)
-}
-
-function evaluateDefinition (def, context) {
-  return evaluateValue(def.body, context)
-}
-
-function evaluateValue (val, context) {
-  const resolvedVal = val.variable
-    ? _.find(context.valueArgs, a => a.param === val.p).value
-    : val
-  if (resolvedVal.v.type === 'application') {
-    return evaluateApplication(resolvedVal.v, context)
+function evaluateValue (value, context) {
+  const resolvedVal = value.isVariable
+    ? context.valueArgs[Number(value.variableRef)]
+    : value
+  if (resolvedVal.nodeType === 'application') {
+    return evaluateApplication(resolvedVal, context)
   }
-  if (resolvedVal.v.type === 'ifelse') {
-    return evaluateIfelse(resolvedVal.v, context)
+  if (resolvedVal.nodeType === 'ifelse') {
+    return evaluateIfelse(resolvedVal, context)
   }
-  if (resolvedVal.v.type === 'integer-literal') {
+  if (resolvedVal.nodeType === 'opt-getter') {
+    return evaluateOptGetter(resolvedVal, context)
+  }
+  if (resolvedVal.nodeType === 'integer-literal') {
     return resolvedVal
   }
-  if (resolvedVal.v.type === 'string-literal') {
+  if (resolvedVal.nodeType === 'string-literal') {
     return resolvedVal
   }
-  if (resolvedVal.v.type === 'bool-literal') {
+  if (resolvedVal.nodeType === 'bool-literal') {
     return resolvedVal
   }
 }
 
 function evaluateApplication (app, context) {
-  const defId = app.definition
-  const valueArgs = app.valueArgs.map(a => {
-    return {
-      param: a.param,
-      value: evaluateValue(a.value)
-    }
-  })
-  const { result } = evaluate(context.program, defId, valueArgs, true)
-  return result
+  const functionIndex = getNodeProperty(app, 'function')
+  const resolvedIndex = functionIndex.isVariable
+    ? context.valueArgs[Number(functionIndex.variableRef)]
+    : functionIndex
+  const newContext = _.clone(context)
+  newContext.valueArgs = getNodeProperty(app, 'valueArgs')
+  const programFunctions = getNodeProperty(context.program, 'functions')
+  const functionObject = programFunctions[Number(resolvedIndex.node)]
+  return evaluateFunction(functionObject, newContext)
 }
 
 function evaluateIfelse (ifelse, context) {
-  const condition = evaluateValue(ifelse.condition, context)
-  if (condition.v.literalValue) {
-    return evaluateValue(ifelse.if, context)
+  const condition = evaluateValue(getNodeProperty(ifelse, 'condition'), context)
+  if (condition.node === 'true') {
+    return evaluateValue(getNodeProperty(ifelse, 'if'), context)
   } else {
-    return evaluateValue(ifelse.else, context)
+    return evaluateValue(getNodeProperty(ifelse, 'else'), context)
+  }
+}
+
+function evaluateOptGetter (optGetter, context) {
+  const value = evaluateValue(getNodeProperty(optGetter, 'value'), context)
+  if (value.nodeType === 'nothing') {
+    return evaluateValue(getNodeProperty(optGetter, 'fallback'), context)
+  } else {
+    return value
   }
 }
 

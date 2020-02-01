@@ -124,20 +124,20 @@
             },
             "condition": {
               "variable": "true",
-              "child": 0
+              "child": "0"
             },
             "if": {
               "variable": "false",
               "child": {
                 "childType": "string-literal",
-                "child": "world"
+                "child": "hello"
               }
             },
             "else": {
               "variable": "false",
               "child": {
                 "childType": "string-literal",
-                "child": "hello"
+                "child": "world"
               }
             }
           }

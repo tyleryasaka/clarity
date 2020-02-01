@@ -1,5 +1,4 @@
 const variableTypes = [
-  'function',
   'domain',
   'value',
   'function-reference'

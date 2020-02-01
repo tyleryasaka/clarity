@@ -218,7 +218,6 @@ function getFunctionSignatureFromDomain (domainObject) {
 // returns: function signature (domain object) for domain comparison
 function getReferencedFunctionSignature (applicationNodeObject, context, domainArgs) {
   // returns: function signature for domain comparison
-  // TODO function definitions should not be variable
   const functionRef = getNodeProperty(applicationNodeObject, 'function')
   if (functionRef.isVariable) {
     const param = getResolvedVariable(functionRef, context.valueParams)

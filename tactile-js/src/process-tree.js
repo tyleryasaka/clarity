@@ -66,7 +66,7 @@ function processVariable (node, semanticNodeType, path) {
 }
 
 function processMultitype (node, nodeType, path, allowedTypes) {
-  const getChildren = processProperty(false, node['childType'], node, 'child', path)
+  const getChildren = processProperty(false, node['childType'], node, 'child', path, false)
   return {
     nodeObject: newNodeObject(node, 'multitype', nodeType),
     path,
@@ -74,15 +74,17 @@ function processMultitype (node, nodeType, path, allowedTypes) {
   }
 }
 
-function processProperty (isList, propertyType, node, key, path) {
+function processProperty (isList, propertyType, node, key, path, appendPath = true) {
   const property = node[key]
-  return (isList && _.isArray(property))
-    ? property.map((item, i) => {
-      return () => {
-        return processNode(item, propertyType, _.union(path, [key, String(i)]))
-      }
+  if (isList && _.isArray(property)) {
+    return property.map((item, i) => {
+      const newPath = appendPath ? _.union(path, [key, String(i)]) : path
+      return () => processNode(item, propertyType, newPath)
     })
-    : [() => processNode(property, propertyType, _.union(path, [key]))]
+  } else {
+    const newPath = appendPath ? _.union(path, [key]) : path
+    return [() => processNode(property, propertyType, newPath)]
+  }
 }
 
 function processObj (node, nodeType, path, keysWithType) {

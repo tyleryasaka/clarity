@@ -1,0 +1,49 @@
+{
+  "functions": [
+    {
+      "id": "1",
+      "function": {
+        "variable": "false",
+        "child": {
+          "name": "hello world",
+          "description": "",
+          "domainParams": [],
+          "valueParams": [
+            {
+              "name": "my value",
+              "description": "",
+              "domain": {
+                "variable": "false",
+                "child": {
+                  "childType": "domain-literal",
+                  "child": "bool"
+                }
+              }
+            }
+          ],
+          "domain": {
+            "variable": "false",
+            "child": {
+              "childType": "domain-literal",
+              "child": "bool"
+            }
+          },
+          "body": {
+            "variable": "false",
+            "child": {
+              "childType": "application",
+              "child": {
+                "function": {
+                  "variable": "false",
+                  "child": "1"
+                },
+                "domainArgs": [],
+                "valueArgs": []
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

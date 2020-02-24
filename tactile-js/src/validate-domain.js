@@ -10,6 +10,9 @@ const {
   processProgram,
   getNodeProperty
 } = require('./process-tree')
+const {
+  getCoreFunctionSignature
+} = require('./core/core')
 
 // returns: validity result
 function validateDomain (program) {
@@ -256,9 +259,14 @@ function getReferencedFunctionSignature (applicationNodeObject, context, domainA
     const paramDomain = getNodeProperty(param, 'domain')
     return getFunctionSignatureFromDomain(paramDomain)
   } else {
-    const functionIndex = Number(functionRef.node)
-    const programFunctions = getNodeProperty(context.program, 'functions')
-    return getFunctionSignatureFromDefinition(programFunctions[functionIndex], domainArgs)
+    if (new RegExp('^core.').test(functionRef.node)) {
+      // this is a call to core library function - evaluate externally
+      return getCoreFunctionSignature(functionRef.node)
+    } else {
+      const functionIndex = Number(functionRef.node)
+      const programFunctions = getNodeProperty(context.program, 'functions')
+      return getFunctionSignatureFromDefinition(programFunctions[functionIndex], domainArgs)
+    }
   }
 }
 

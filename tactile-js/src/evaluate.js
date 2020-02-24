@@ -3,6 +3,9 @@ const {
   processProgram,
   getNodeProperty
 } = require('./process-tree')
+const {
+  evaluateCoreFunction
+} = require('./core/core')
 
 function evaluate (program, functionIndex) {
   const { programObject } = processProgram(program)
@@ -56,8 +59,13 @@ function evaluateApplication (app, context) {
   const newContext = _.clone(context)
   newContext.valueArgs = getNodeProperty(app, 'valueArgs')
   const programFunctions = getNodeProperty(context.program, 'functions')
-  const functionObject = programFunctions[Number(resolvedIndex.node)]
-  return evaluateFunction(functionObject, newContext)
+  if (new RegExp('^core.').test(resolvedIndex.node)) {
+    // this is a call to core library function - evaluate externally
+    return evaluateCoreFunction(resolvedIndex.node, newContext.valueArgs)
+  } else {
+    const functionObject = programFunctions[Number(resolvedIndex.node)]
+    return evaluateFunction(functionObject, newContext)
+  }
 }
 
 function evaluateIfelse (ifelse, context) {

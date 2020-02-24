@@ -1,0 +1,46 @@
+{
+  "functions": [
+    {
+      "name": "two plus two",
+      "description": "",
+      "domainParams": [],
+      "valueParams": [],
+      "domain": {
+        "variable": "false",
+        "child": {
+          "childType": "domain-literal",
+          "child": "integer"
+        }
+      },
+      "body": {
+        "variable": "false",
+        "child": {
+          "childType": "application",
+          "child": {
+            "function": {
+              "variable": "false",
+              "child": "core.math.add"
+            },
+            "valueArgs": [
+              {
+                "variable": "false",
+                "child": {
+                  "childType": "integer-literal",
+                  "child": "2"
+                }
+              },
+              {
+                "variable": "false",
+                "child": {
+                  "childType": "integer-literal",
+                  "child": "2"
+                }
+              }
+            ],
+            "domainArgs": []
+          }
+        }
+      }
+    }
+  ]
+}

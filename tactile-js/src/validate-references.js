@@ -9,6 +9,9 @@ const {
   processProgram,
   getNodeProperty
 } = require('./process-tree')
+const {
+  coreFunctions
+} = require('./core/core')
 
 // returns: validity result
 function validateReferences (program) {
@@ -44,9 +47,14 @@ function proceed (getChildren, context) {
 
 // returns: validity result
 function validateFunctionReference (functionRef, path, context) {
-  const functionIndex = Number(functionRef.node)
-  const programFunctions = getNodeProperty(context.program, 'functions')
-  return validityResult((functionIndex >= 0) && (functionIndex < programFunctions.length), 'nonexistent-function')
+  if (new RegExp('^core.').test(functionRef.node)) {
+    // this is a call to core library function - evaluate externally
+    return validityResult(_.includes(coreFunctions, functionRef.node), 'nonexistent-function')
+  } else {
+    const functionIndex = Number(functionRef.node)
+    const programFunctions = getNodeProperty(context.program, 'functions')
+    return validityResult((functionIndex >= 0) && (functionIndex < programFunctions.length), 'nonexistent-function')
+  }
 }
 
 // returns: validity result

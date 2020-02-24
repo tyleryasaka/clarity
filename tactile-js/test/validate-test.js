@@ -5,6 +5,7 @@ const assert = require('assert')
 
 const valid1 = fs.readFileSync('./test/stubs/program.json', 'utf8')
 const valid2 = fs.readFileSync('./test/stubs/valid/opt.json', 'utf8')
+const mathProgram = fs.readFileSync('./test/stubs/valid/math.json', 'utf8')
 const validate = require('../src/validate')
 
 describe('validate', function () {
@@ -21,6 +22,12 @@ describe('validate', function () {
     assert.ok(result.isValid)
     const result2 = validate(JSON.parse(valid2))
     assert.strictEqual(result2.errorCode, '')
+    assert.ok(result.isValid)
+  })
+
+  it('should validate a program that calls core function', function () {
+    const result = validate(JSON.parse(mathProgram))
+    assert.strictEqual(result.errorCode, '')
     assert.ok(result.isValid)
   })
 })

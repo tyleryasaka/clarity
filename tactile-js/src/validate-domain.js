@@ -15,9 +15,12 @@ const {
 } = require('./core/core')
 
 // returns: validity result
-function validateDomain (program) {
+function validateDomain (program, libraries = {}) {
   const { programObject, nodeObject, path, getChildren } = processProgram(program)
-  const context = { program: programObject, valueParams: [] }
+  const libraryObjects = _.mapObject(libraries, (library) => {
+    return processProgram(library).programObject
+  })
+  const context = { program: programObject, valueParams: [], libraries: libraryObjects }
   return validateNode(nodeObject, path, getChildren, context)
 }
 
@@ -259,9 +262,17 @@ function getReferencedFunctionSignature (applicationNodeObject, context, domainA
     const paramDomain = getNodeProperty(param, 'domain')
     return getFunctionSignatureFromDomain(paramDomain)
   } else {
-    if (new RegExp('^core.').test(functionRef.node)) {
+    if (new RegExp('^core\\..+\\..+$').test(functionRef.node)) {
       // this is a call to core library function - evaluate externally
       return getCoreFunctionSignature(functionRef.node)
+    } else if (new RegExp('^library\\..+\\.\\d+$').test(functionRef.node)) {
+      // this is a call to external library function - get definition from that library
+      const exploded = functionRef.node.split('.')
+      const libraryName = exploded[1]
+      const functionIndex = Number(exploded[2])
+      const library = context.libraries[libraryName]
+      const libraryFunctions = getNodeProperty(library, 'functions')
+      return getFunctionSignatureFromDefinition(libraryFunctions[functionIndex], domainArgs)
     } else {
       const functionIndex = Number(functionRef.node)
       const programFunctions = getNodeProperty(context.program, 'functions')

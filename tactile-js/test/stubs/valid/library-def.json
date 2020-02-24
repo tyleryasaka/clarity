@@ -1,0 +1,32 @@
+{
+  "functions": [
+    {
+      "name": "trivial abstract",
+      "description": "",
+      "domainParams": [
+        {
+          "name": "my domain",
+          "description": ""
+        }
+      ],
+      "valueParams": [
+        {
+          "name": "my value",
+          "description": "",
+          "domain": {
+            "variable": "true",
+            "child": "0"
+          }
+        }
+      ],
+      "domain": {
+        "variable": "true",
+        "child": "0"
+      },
+      "body": {
+        "variable": "true",
+        "child": "0"
+      }
+    }
+  ]
+}

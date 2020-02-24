@@ -1,0 +1,47 @@
+{
+  "functions": [
+    {
+      "name": "trivial application",
+      "description": "",
+      "domainParams": [],
+      "valueParams": [],
+      "domain": {
+        "variable": "false",
+        "child": {
+          "childType": "domain-literal",
+          "child": "bool"
+        }
+      },
+      "body": {
+        "variable": "false",
+        "child": {
+          "childType": "application",
+          "child": {
+            "function": {
+              "variable": "false",
+              "child": "library.mylib.0"
+            },
+            "domainArgs": [
+              {
+                "variable": "false",
+                "child": {
+                  "childType": "domain-literal",
+                  "child": "bool"
+                }
+              }
+            ],
+            "valueArgs": [
+              {
+                "variable": "false",
+                "child": {
+                  "childType": "bool-literal",
+                  "child": "false"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

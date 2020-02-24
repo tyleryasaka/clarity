@@ -7,8 +7,11 @@ const {
   evaluateCoreFunction
 } = require('./core/core')
 
-function evaluate (program, functionIndex) {
+function evaluate (program, functionIndex, libraries = {}) {
   const { programObject } = processProgram(program)
+  const libraryObjects = _.mapObject(libraries, (library) => {
+    return processProgram(library).programObject
+  })
   const programFunctions = getNodeProperty(programObject, 'functions')
   if (functionIndex >= programFunctions.length) {
     return { errorCode: 'nonexistent-function' }
@@ -19,7 +22,7 @@ function evaluate (program, functionIndex) {
   if ((domainParams.length > 0) || (valueParams.length > 0)) {
     return { errorCode: 'nonexecutable-function' }
   }
-  const context = { program: programObject, valueArgs: [] }
+  const context = { program: programObject, valueArgs: [], libraries: libraryObjects }
   return { errorCode: '', result: evaluateFunction(functionObject, context).node }
 }
 
@@ -59,9 +62,18 @@ function evaluateApplication (app, context) {
   const newContext = _.clone(context)
   newContext.valueArgs = getNodeProperty(app, 'valueArgs')
   const programFunctions = getNodeProperty(context.program, 'functions')
-  if (new RegExp('^core.').test(resolvedIndex.node)) {
+  if (new RegExp('^core\\..+\\..+$').test(resolvedIndex.node)) {
     // this is a call to core library function - evaluate externally
     return evaluateCoreFunction(resolvedIndex.node, newContext.valueArgs)
+  } else if (new RegExp('^library\\..+\\.\\d+$').test(resolvedIndex.node)) {
+    // this is a call to external library function - get definition from that library
+    const exploded = resolvedIndex.node.split('.')
+    const libraryName = exploded[1]
+    const library = context.libraries[libraryName]
+    const functionIndex = Number(exploded[2])
+    const libraryFunctions = getNodeProperty(library, 'functions')
+    const functionObject = libraryFunctions[functionIndex]
+    return evaluateFunction(functionObject, newContext)
   } else {
     const functionObject = programFunctions[Number(resolvedIndex.node)]
     return evaluateFunction(functionObject, newContext)

@@ -8,12 +8,12 @@ const {
   chainIfValid
 } = require('./validation-utils')
 
-function validate (program) {
+function validate (program, libraries = {}) {
   return chainIfValid([
     () => validityResult(_.isObject(program), 'invalid-input', []),
     () => validateSyntax(program),
-    () => validateReferences(program),
-    () => validateDomain(program)
+    () => validateReferences(program, libraries),
+    () => validateDomain(program, libraries)
   ])
 }
 

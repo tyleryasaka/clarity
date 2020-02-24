@@ -9,7 +9,7 @@ const primitiveValidators = {
   'bool-literal': new RegExp('^(true|false)$'),
   'integer-literal': new RegExp('^\\d+$'),
   'domain-literal': new RegExp('^(string|integer|bool|function)$'),
-  'function-reference': new RegExp('^(\\d+)|(core(\\..+))$'),
+  'function-reference': new RegExp('^(\\d+)|(core\\..+\\..+)|(library\\..+\\.\\d+)$'),
   'variable-reference': new RegExp('^\\d+$'),
   'nothing': new RegExp('^$')
 }

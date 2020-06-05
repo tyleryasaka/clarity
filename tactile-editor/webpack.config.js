@@ -10,14 +10,30 @@ const ElectronReloadWebpackPlugin = createElectronReloadWebpackPlugin({
 module.exports = [
   {
     mode: 'development',
-    entry: './src/index.ts',
+    entry: './src/index.js',
     target: 'electron-main',
     module: {
-      rules: [{
-        test: /\.ts$/,
-        include: /src/,
-        use: [{ loader: 'ts-loader' }]
-      }]
+      rules: [
+        {
+          test: /\.(js)$/,
+          exclude: /node_modules/,
+          use: ['babel-loader']
+        },
+        {
+          test: /\.css$/i,
+          use: ['style-loader', 'css-loader']
+        },
+        {
+          test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/i,
+          loader: 'url-loader',
+          options: {
+            limit: 8192
+          }
+        }
+      ]
+    },
+    resolve: {
+      extensions: ['*', '.js']
     },
     output: {
       path: path.join(__dirname, './dist'),
@@ -26,35 +42,31 @@ module.exports = [
   },
   {
     mode: 'development',
-    entry: './src/react.tsx',
+    entry: './src/react.js',
     target: 'electron-renderer',
     devtool: 'source-map',
     module: {
-      rules: [{
-        test: /\.ts(x?)$/,
-        include: /src/,
-        use: [{ loader: 'ts-loader' }]
-      },
-      {
-        test: /\.css$/i,
-        use: ['style-loader', 'css-loader']
-      },
-      {
-        test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/i,
-        loader: 'url-loader',
-        options: {
-          limit: 8192
+      rules: [
+        {
+          test: /\.(js)$/,
+          exclude: /node_modules/,
+          use: ['babel-loader']
+        },
+        {
+          test: /\.css$/i,
+          use: ['style-loader', 'css-loader']
+        },
+        {
+          test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/i,
+          loader: 'url-loader',
+          options: {
+            limit: 8192
+          }
         }
-      }]
+      ]
     },
     resolve: {
-      extensions: [
-        '.webpack.js',
-        '.web.js',
-        '.tsx',
-        '.ts',
-        '.js'
-      ]
+      extensions: ['*', '.js']
     },
     output: {
       path: path.join(__dirname, './dist'),

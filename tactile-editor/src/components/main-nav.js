@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { remote } from 'electron'
 import {
     Alignment,
     Button,
@@ -9,56 +10,77 @@ import {
     NavbarHeading,
     Tab,
     Tabs,
-    InputGroup,
     TabId
 } from '@blueprintjs/core'
+const electronFs = remote.require('fs')
+const electronPath = remote.require('path')
 
-interface Props {
-  hello?: string
+// interface Props {
+//   hello?: string
+// }
+//
+// interface State {
+//   hello?: string
+//   navbarTabId: TabId
+// }
+
+const state = {
+  hello: 'world',
+  navbarTabId: 'tab-1'
 }
 
-interface State {
-  hello?: string
-  navbarTabId: TabId
-}
-
-class MainNav extends Component<Props, State> {
-  public state: State = {
-    hello: 'world',
-    navbarTabId: 'tab-1'
+class MainNav extends Component {
+  async openDialog () {
+    const dialogResult = await remote.dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'Tactile Program', extensions: ['json'] }
+      ]
+    })
+    if (!dialogResult.canceled && dialogResult.filePaths.length) {
+      electronFs.readFile(
+        electronPath.resolve(__dirname, dialogResult.filePaths[0]),
+        'utf-8',
+        (err, data) => {
+          if (err) throw err
+          console.log(data)
+        }
+      )
+    }
   }
 
-  render() {
+  handleTabChange (navbarTabId) {
+    this.setState({ navbarTabId })
+  }
+
+  render () {
     return (
       <>
         <Navbar className={Classes.DARK}>
           <NavbarGroup align={Alignment.LEFT}>
             <NavbarHeading>Tactile</NavbarHeading>
             <NavbarDivider />
-            <Button className={Classes.MINIMAL} icon="home" text="Home" />
-            <Button className={Classes.MINIMAL} icon="document" text="Files" />
+            <Button className={Classes.MINIMAL} icon='document' text='Load Program' onClick={this.openDialog.bind(this)} />
           </NavbarGroup>
         </Navbar>
         <Tabs
-          animate={true}
-          renderActiveTabPanelOnly={true}
-          vertical={true}
+          animate
+          renderActiveTabPanelOnly
+          vertical
           onChange={this.handleTabChange}
           className={Classes.TABS}
         >
-          <Tab id="tab-1" title="React" panel={<ReactPanel />} />
-          <Tab id="tab-2" title="Angular" panel={<AngularPanel />} />
-          <Tab id="tab-3" title="Ember" panel={<EmberPanel />} />
+          <Tab id='tab-1' title='React' panel={<ReactPanel />} />
+          <Tab id='tab-2' title='Angular' panel={<AngularPanel />} />
+          <Tab id='tab-3' title='Ember' panel={<EmberPanel />} />
           <Tabs.Expander />
         </Tabs>
       </>
     )
   }
-
-  private handleTabChange = (navbarTabId: TabId) => this.setState({ navbarTabId })
 }
 
-const ReactPanel: React.SFC<{}> = () => (
+const ReactPanel = () => (
   <div>
     <p className={Classes.RUNNING_TEXT}>
       Lots of people use React as the V in MVC. Since React makes no assumptions about the rest of your technology
@@ -67,7 +89,7 @@ const ReactPanel: React.SFC<{}> = () => (
   </div>
 )
 
-const AngularPanel: React.SFC<{}> = () => (
+const AngularPanel = () => (
   <div>
     <p className={Classes.RUNNING_TEXT}>
       HTML is great for declaring static documents, but it falters when we try to use it for declaring dynamic
@@ -77,7 +99,7 @@ const AngularPanel: React.SFC<{}> = () => (
   </div>
 )
 
-const EmberPanel: React.SFC<{}> = () => (
+const EmberPanel = () => (
   <div>
     <p className={Classes.RUNNING_TEXT}>
       Ember.js is an open-source JavaScript application framework, based on the model-view-controller (MVC)
@@ -87,4 +109,4 @@ const EmberPanel: React.SFC<{}> = () => (
   </div>
 )
 
-export default MainNav;
+export default MainNav

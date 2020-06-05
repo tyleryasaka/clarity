@@ -7,9 +7,11 @@ import './styles/app.css'
 FocusStyleManager.onlyShowFocusOnTabs()
 
 const Index = () => {
-  return <div className={Classes.DARK}>
-    <MainNav />
-  </div>
+  return (
+    <div className={Classes.DARK}>
+      <MainNav />
+    </div>
+  )
 }
 
 ReactDOM.render(<Index />, document.getElementById('app'))

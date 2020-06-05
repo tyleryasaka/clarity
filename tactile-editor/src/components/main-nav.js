@@ -1,16 +1,15 @@
 import React, { Component } from 'react'
 import { remote } from 'electron'
 import {
-    Alignment,
-    Button,
-    Classes,
-    Navbar,
-    NavbarDivider,
-    NavbarGroup,
-    NavbarHeading,
-    Tab,
-    Tabs,
-    TabId
+  Alignment,
+  Button,
+  Classes,
+  Navbar,
+  NavbarDivider,
+  NavbarGroup,
+  NavbarHeading,
+  Tab,
+  Tabs
 } from '@blueprintjs/core'
 const electronFs = remote.require('fs')
 const electronPath = remote.require('path')
@@ -24,12 +23,15 @@ const electronPath = remote.require('path')
 //   navbarTabId: TabId
 // }
 
-const state = {
-  hello: 'world',
-  navbarTabId: 'tab-1'
-}
-
 class MainNav extends Component {
+  constructor () {
+    super()
+    this.state = {
+      functions: [],
+      currentFnIndex: null
+    }
+  }
+
   async openDialog () {
     const dialogResult = await remote.dialog.showOpenDialog({
       properties: ['openFile'],
@@ -43,17 +45,26 @@ class MainNav extends Component {
         'utf-8',
         (err, data) => {
           if (err) throw err
-          console.log(data)
+          try {
+            const program = JSON.parse(data)
+            console.log(program)
+            console.log(dialogResult.filePaths[0])
+            this.setState({ functions: program.functions })
+          } catch (e) {
+            console.log(e)
+          }
         }
       )
     }
   }
 
   handleTabChange (navbarTabId) {
-    this.setState({ navbarTabId })
+    this.setState({ currentFnIndex: navbarTabId })
   }
 
   render () {
+    const { currentFnIndex, functions } = this.state
+    const currentFn = (currentFnIndex !== null) ? functions[currentFnIndex] : {}
     return (
       <>
         <Navbar className={Classes.DARK}>
@@ -67,46 +78,24 @@ class MainNav extends Component {
           animate
           renderActiveTabPanelOnly
           vertical
-          onChange={this.handleTabChange}
+          onChange={this.handleTabChange.bind(this)}
           className={Classes.TABS}
         >
-          <Tab id='tab-1' title='React' panel={<ReactPanel />} />
-          <Tab id='tab-2' title='Angular' panel={<AngularPanel />} />
-          <Tab id='tab-3' title='Ember' panel={<EmberPanel />} />
-          <Tabs.Expander />
+          {this.state.functions.map((fn, index) => {
+            return (
+              <Tab id={index} key={index} title={fn.name} panel={(
+                <div>
+                  <p className={Classes.RUNNING_TEXT}>
+                    {currentFn.name}
+                  </p>
+                </div>
+              )} />
+            )
+          })}
         </Tabs>
       </>
     )
   }
 }
-
-const ReactPanel = () => (
-  <div>
-    <p className={Classes.RUNNING_TEXT}>
-      Lots of people use React as the V in MVC. Since React makes no assumptions about the rest of your technology
-      stack, it's easy to try it out on a small feature in an existing project.
-    </p>
-  </div>
-)
-
-const AngularPanel = () => (
-  <div>
-    <p className={Classes.RUNNING_TEXT}>
-      HTML is great for declaring static documents, but it falters when we try to use it for declaring dynamic
-      views in web-applications. AngularJS lets you extend HTML vocabulary for your application. The resulting
-      environment is extraordinarily expressive, readable, and quick to develop.
-    </p>
-  </div>
-)
-
-const EmberPanel = () => (
-  <div>
-    <p className={Classes.RUNNING_TEXT}>
-      Ember.js is an open-source JavaScript application framework, based on the model-view-controller (MVC)
-      pattern. It allows developers to create scalable single-page web applications by incorporating common idioms
-      and best practices into the framework. What is your favorite JS framework?
-    </p>
-  </div>
-)
 
 export default MainNav

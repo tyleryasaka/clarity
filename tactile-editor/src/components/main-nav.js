@@ -11,17 +11,9 @@ import {
   Tab,
   Tabs
 } from '@blueprintjs/core'
+import EditFunction from './edit-function'
 const electronFs = remote.require('fs')
 const electronPath = remote.require('path')
-
-// interface Props {
-//   hello?: string
-// }
-//
-// interface State {
-//   hello?: string
-//   navbarTabId: TabId
-// }
 
 class MainNav extends Component {
   constructor () {
@@ -62,6 +54,12 @@ class MainNav extends Component {
     this.setState({ currentFnIndex: navbarTabId })
   }
 
+  handleFunctionChange (functionIndex, updatedFn) {
+    const functions = JSON.parse(JSON.stringify(this.state.functions))
+    functions[functionIndex] = updatedFn
+    this.setState({ functions })
+  }
+
   render () {
     const { currentFnIndex, functions } = this.state
     const currentFn = (currentFnIndex !== null) ? functions[currentFnIndex] : {}
@@ -84,11 +82,7 @@ class MainNav extends Component {
           {this.state.functions.map((fn, index) => {
             return (
               <Tab id={index} key={index} title={fn.name} panel={(
-                <div>
-                  <p className={Classes.RUNNING_TEXT}>
-                    {currentFn.name}
-                  </p>
-                </div>
+                <EditFunction fn={currentFn} onChangeFn={(updatedFn) => this.handleFunctionChange(index, updatedFn)} />
               )} />
             )
           })}

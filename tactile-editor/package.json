@@ -48,6 +48,7 @@
   "dependencies": {
     "@blueprintjs/core": "^3.19.1",
     "@blueprintjs/icons": "^3.11.0",
+    "@blueprintjs/select": "^3.13.5",
     "electron-squirrel-startup": "^1.0.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0"
